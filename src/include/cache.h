@@ -16,8 +16,7 @@ class Cache {
   using const_iterator = typename map::const_iterator;
   using operation_guard = typename std::lock_guard<std::mutex>;
 
-  Cache(size_t max_size,
-        const Policy& policy);
+  Cache(size_t capacity);
 
   void Put(const Key& key, const Value& value);
 
@@ -38,11 +37,11 @@ class Cache {
  private:
   std::unordered_map<Key, Value> cache_items_map;
 
-  mutable Policy cache_policy;
+  mutable Policy cache_policy_;
 
-  mutable std::mutex safe_op;
+  mutable std::mutex cache_mutex_;
 
-  size_t max_cache_size;
+  size_t capacity_;
 
 };
 

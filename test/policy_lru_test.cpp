@@ -11,15 +11,12 @@
 
 namespace machine {
 
-template <typename Key>
-using lru_t = LRUCachePolicy<Key>;
 template <typename Key, typename Value>
 using lru_cache_t = Cache<Key, Value, LRUCachePolicy<Key>>;
 
 TEST(LRUCache, SimplePut) {
   size_t cache_capacity = 1;
-  lru_cache_t<std::string, int> cache(cache_capacity,
-                                      lru_t<std::string>(cache_capacity));
+  lru_cache_t<std::string, int> cache(cache_capacity);
 
   cache.Put("test", 666);
 
@@ -28,8 +25,7 @@ TEST(LRUCache, SimplePut) {
 
 TEST(LRUCache, MissingValue) {
   size_t cache_capacity = 1;
-  lru_cache_t<std::string, int> cache(cache_capacity,
-                                      lru_t<std::string>(cache_capacity));
+  lru_cache_t<std::string, int> cache(cache_capacity);
 
   EXPECT_THROW(cache.Get("test"), std::range_error);
 }
@@ -37,8 +33,7 @@ TEST(LRUCache, MissingValue) {
 TEST(LRUCache, KeepsAllValuesWithinCapacity) {
   constexpr int CACHE_CAPACITY = 50;
   const int TEST_RECORDS = 100;
-  lru_cache_t<int, int> cache(CACHE_CAPACITY,
-                              lru_t<int>(CACHE_CAPACITY));
+  lru_cache_t<int, int> cache(CACHE_CAPACITY);
 
   for (int i = 0; i < TEST_RECORDS; ++i) {
     cache.Put(i, i);
@@ -55,8 +50,7 @@ TEST(LRUCache, KeepsAllValuesWithinCapacity) {
 
 TEST(LRUCache, CheckVictim) {
   size_t cache_capacity = 3;
-  lru_cache_t<int, std::string> cache(cache_capacity,
-                                      lru_t<int>(cache_capacity));
+  lru_cache_t<int, std::string> cache(cache_capacity);
 
   cache.Put(1,"data1");
   cache.Put(2,"data2");

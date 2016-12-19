@@ -11,15 +11,12 @@
 
 namespace machine {
 
-template <typename Key>
-using fifo_t = FIFOCachePolicy<Key>;
 template <typename Key, typename Value>
 using fifo_cache_t = Cache<Key, Value, FIFOCachePolicy<Key>>;
 
 TEST(FIFOCache, Simple_Test) {
   size_t cache_capacity = 2;
-  fifo_cache_t<int, int> fc(cache_capacity,
-                            fifo_t<int>(cache_capacity));
+  fifo_cache_t<int, int> fc(cache_capacity);
 
   fc.Put(1, 10);
   fc.Put(2, 20);
@@ -40,8 +37,7 @@ TEST(FIFOCache, Simple_Test) {
 
 TEST(FIFOCache, Missing_Value) {
   size_t cache_capacity = 2;
-  fifo_cache_t<int, int> fc(cache_capacity,
-                            fifo_t<int>(cache_capacity));
+  fifo_cache_t<int, int> fc(cache_capacity);
 
   fc.Put(1, 10);
 
@@ -52,8 +48,7 @@ TEST(FIFOCache, Missing_Value) {
 
 TEST(FIFOCache, Sequence_Test) {
   constexpr int TEST_SIZE = 10;
-  fifo_cache_t<std::string, int> fc(TEST_SIZE,
-                                    fifo_t<std::string>(TEST_SIZE));
+  fifo_cache_t<std::string, int> fc(TEST_SIZE);
 
   for (size_t i = 0; i < TEST_SIZE; ++i) {
     fc.Put(std::to_string('0' + i), i);
@@ -87,8 +82,7 @@ TEST(FIFOCache, Sequence_Test) {
 
 TEST(FIFOCache, CheckVictim) {
   size_t cache_capacity = 3;
-  fifo_cache_t<int, std::string> cache(cache_capacity,
-                                       fifo_t<int>(cache_capacity));
+  fifo_cache_t<int, std::string> cache(cache_capacity);
 
   cache.Put(1,"data1");
   cache.Put(2,"data2");

@@ -11,15 +11,12 @@
 
 namespace machine {
 
-template <typename Key>
-using arc_t = ARCCachePolicy<Key>;
 template <typename Key, typename Value>
 using arc_cache_t = Cache<Key, Value, ARCCachePolicy<Key>>;
 
 TEST(ARCCache, SimplePut) {
   size_t cache_capacity = 1;
-  arc_cache_t<std::string, int> cache(cache_capacity,
-                                      arc_t<std::string>(cache_capacity));
+  arc_cache_t<std::string, int> cache(cache_capacity);
 
   cache.Put("test", 666);
 
@@ -28,8 +25,7 @@ TEST(ARCCache, SimplePut) {
 
 TEST(ARCCache, MissingValue) {
   size_t cache_capacity = 1;
-  arc_cache_t<std::string, int> cache(cache_capacity,
-                                      arc_t<std::string>(cache_capacity));
+  arc_cache_t<std::string, int> cache(cache_capacity);
 
   EXPECT_THROW(cache.Get("test"), std::range_error);
 }
@@ -37,7 +33,7 @@ TEST(ARCCache, MissingValue) {
 TEST(ARCCache, KeepsAllValuesWithinCapacity) {
   constexpr int CACHE_CAPACITY = 50;
   const int TEST_RECORDS = 100;
-  arc_cache_t<int, int> cache(CACHE_CAPACITY, arc_t<int>(CACHE_CAPACITY));
+  arc_cache_t<int, int> cache(CACHE_CAPACITY);
 
   for (int i = 0; i < TEST_RECORDS; ++i) {
     cache.Put(i, i);
@@ -54,8 +50,7 @@ TEST(ARCCache, KeepsAllValuesWithinCapacity) {
 
 TEST(ARCCache, CheckVictim) {
   size_t cache_capacity = 3;
-  arc_cache_t<int, std::string> cache(cache_capacity,
-                                      arc_t<int>(cache_capacity));
+  arc_cache_t<int, std::string> cache(cache_capacity);
 
   cache.Put(1,"data1");
   cache.Put(2,"data2");
@@ -68,8 +63,7 @@ TEST(ARCCache, CheckVictim) {
 
 TEST(ARCCache, CheckPointerMove) {
   size_t cache_capacity = 3;
-  arc_cache_t<int, std::string> cache(cache_capacity,
-                                      arc_t<int>(cache_capacity));
+  arc_cache_t<int, std::string> cache(cache_capacity);
 
   cache.Put(1,"data1");
   cache.Put(2,"data2");
@@ -84,8 +78,7 @@ TEST(ARCCache, CheckPointerMove) {
 
 TEST(ARCCache, CheckPointerMoveT2) {
   size_t cache_capacity = 3;
-  arc_cache_t<int, std::string> cache(cache_capacity,
-                                      arc_t<int>(cache_capacity));
+  arc_cache_t<int, std::string> cache(cache_capacity);
 
   cache.Put(1,"data1");
   cache.Put(2,"data2");
@@ -104,8 +97,7 @@ TEST(ARCCache, CheckPointerMoveT2) {
 
 TEST(ARCCache, CheckPointerSaveB1) {
   size_t cache_capacity = 4;
-  arc_cache_t<int, std::string> cache(cache_capacity,
-                                      arc_t<int>(cache_capacity));
+  arc_cache_t<int, std::string> cache(cache_capacity);
 
   cache.Put(1,"data1");
   cache.Put(2,"data2");
@@ -120,8 +112,7 @@ TEST(ARCCache, CheckPointerSaveB1) {
 
 TEST(ARCCache, CheckPointerSaveB2) {
   size_t cache_capacity = 4;
-  arc_cache_t<int, std::string> cache(cache_capacity,
-                                      arc_t<int>(cache_capacity));
+  arc_cache_t<int, std::string> cache(cache_capacity);
 
   cache.Put(1,"data1");
   cache.Put(2,"data2");
