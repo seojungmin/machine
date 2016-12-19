@@ -11,6 +11,8 @@
 
 namespace machine {
 
+template <typename Key>
+using lfu_t = LFUCachePolicy<Key>;
 template <typename Key, typename Value>
 using lfu_cache_t = Cache<Key, Value, LFUCachePolicy<Key>>;
 
@@ -18,7 +20,7 @@ TEST(LFUCache, Simple_Test) {
   constexpr size_t FIRST_FREQ = 10;
   constexpr size_t SECOND_FREQ = 9;
   constexpr size_t THIRD_FREQ = 8;
-  lfu_cache_t<std::string, int> cache(3);
+  lfu_cache_t<std::string, int> cache(3, lfu_t<std::string>(3));
 
   cache.Put("A", 1);
   cache.Put("B", 2);
@@ -46,7 +48,7 @@ TEST(LFUCache, Simple_Test) {
 
 TEST(LFUCache, Single_Slot) {
   constexpr size_t TEST_SIZE = 5;
-  lfu_cache_t<int, int> cache(1);
+  lfu_cache_t<int, int> cache(1, lfu_t<int>(1));
 
   cache.Put(1, 10);
 
@@ -64,7 +66,7 @@ TEST(LFUCache, Single_Slot) {
 
 TEST(LFUCache, FrequencyIssue) {
   constexpr size_t TEST_SIZE = 50;
-  lfu_cache_t<int, int> cache(3);
+  lfu_cache_t<int, int> cache(3, lfu_t<int>(3));
 
   cache.Put(1, 10);
   cache.Put(2, 1);

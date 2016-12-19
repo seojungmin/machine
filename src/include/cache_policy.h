@@ -4,6 +4,8 @@
 
 #include <unordered_set>
 
+#include "macros.h"
+
 namespace machine {
 
 template <typename Key>
@@ -30,7 +32,10 @@ template <typename Key>
 class NoCachePolicy : public ICachePolicy<Key> {
  public:
 
-  NoCachePolicy() = default;
+  NoCachePolicy(UNUSED_ATTRIBUTE const size_t& max_size){
+    // Nothing to do here!
+  }
+
   ~NoCachePolicy() override = default;
 
   void Insert(const Key& key) override {
@@ -38,7 +43,7 @@ class NoCachePolicy : public ICachePolicy<Key> {
   }
 
   void Touch(const Key& key) override {
-    // do not do anything
+    // Nothing to do here!
   }
 
   void Erase(const Key& key) override {

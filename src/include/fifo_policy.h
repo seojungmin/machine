@@ -12,7 +12,11 @@ namespace machine {
 template <typename Key>
 class FIFOCachePolicy : public ICachePolicy<Key> {
  public:
-  FIFOCachePolicy() = default;
+
+  FIFOCachePolicy(UNUSED_ATTRIBUTE const size_t& max_size){
+    // Nothing to do here!
+  }
+
   ~FIFOCachePolicy() = default;
 
   void Insert(const Key& key) override {

@@ -11,11 +11,13 @@
 
 namespace machine {
 
+template <typename Key>
+using fifo_t = FIFOCachePolicy<Key>;
 template <typename Key, typename Value>
 using fifo_cache_t = Cache<Key, Value, FIFOCachePolicy<Key>>;
 
 TEST(FIFOCache, Simple_Test) {
-  fifo_cache_t<int, int> fc(2);
+  fifo_cache_t<int, int> fc(2, fifo_t<int>(2));
 
   fc.Put(1, 10);
   fc.Put(2, 20);
@@ -35,7 +37,7 @@ TEST(FIFOCache, Simple_Test) {
 }
 
 TEST(FIFOCache, Missing_Value) {
-  fifo_cache_t<int, int> fc(2);
+  fifo_cache_t<int, int> fc(2, fifo_t<int>(2));
 
   fc.Put(1, 10);
 
@@ -46,7 +48,7 @@ TEST(FIFOCache, Missing_Value) {
 
 TEST(FIFOCache, Sequence_Test) {
   constexpr int TEST_SIZE = 10;
-  fifo_cache_t<std::string, int> fc(TEST_SIZE);
+  fifo_cache_t<std::string, int> fc(TEST_SIZE, fifo_t<std::string>(TEST_SIZE));
 
   for (size_t i = 0; i < TEST_SIZE; ++i) {
     fc.Put(std::to_string('0' + i), i);

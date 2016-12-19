@@ -15,7 +15,10 @@ class LRUCachePolicy : public ICachePolicy<Key> {
  public:
   using lru_iterator = typename std::list<Key>::const_iterator;
 
-  LRUCachePolicy() = default;
+  LRUCachePolicy(UNUSED_ATTRIBUTE const size_t& max_size){
+    // Nothing to do here!
+  }
+
   ~LRUCachePolicy() = default;
 
   void Insert(const Key& key) override {

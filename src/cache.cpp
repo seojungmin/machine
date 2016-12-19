@@ -11,6 +11,7 @@
 #include "lru_policy.h"
 #include "lfu_policy.h"
 #include "fifo_policy.h"
+#include "arc_policy.h"
 
 namespace machine {
 
@@ -126,6 +127,10 @@ template class Cache<std::string, int, LFUCachePolicy<std::string>>;
 // FIFO
 template class Cache<int, int, FIFOCachePolicy<int>>;
 template class Cache<std::string, int, FIFOCachePolicy<std::string>>;
+
+// ARC
+template class Cache<int, int, ARCCachePolicy<int>>;
+template class Cache<std::string, int, ARCCachePolicy<std::string>>;
 
 
 }  // End machine namespace

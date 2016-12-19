@@ -17,7 +17,10 @@ class LFUCachePolicy : public ICachePolicy<Key> {
  public:
   using lfu_iterator = typename std::multimap<std::size_t, Key>::iterator;
 
-  LFUCachePolicy() = default;
+  LFUCachePolicy(UNUSED_ATTRIBUTE const size_t& max_size){
+    // Nothing to do here!
+  }
+
   ~LFUCachePolicy() override = default;
 
   void Insert(const Key& key) override {

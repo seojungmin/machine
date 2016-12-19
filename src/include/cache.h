@@ -17,7 +17,7 @@ class Cache {
   using operation_guard = typename std::lock_guard<std::mutex>;
 
   Cache(size_t max_size,
-        const Policy& policy = Policy());
+        const Policy& policy);
 
   void Put(const Key& key, const Value& value);
 

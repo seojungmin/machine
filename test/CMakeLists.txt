@@ -16,3 +16,8 @@ add_test(NAME LFUTest COMMAND lfu_test)
 add_executable(fifo_test fifo_test.cpp)
 target_link_libraries(fifo_test machine ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 add_test(NAME FIFOTest COMMAND fifo_test)
+
+# ---[ ARC TEST
+add_executable(arc_test arc_test.cpp)
+target_link_libraries(arc_test machine ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+add_test(NAME ARCTest COMMAND arc_test)
