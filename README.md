@@ -1,16 +1,7 @@
 Machine
 -------
 
-Machine model that emulates a multi-tier storage hierarchy  
-
-# Levels
-
-DRAM  
-NVM  
-SSD  
-HDD  
-
-LRU or ARC  
+Machine model that emulates a multi-tier storage hierarchy   
 
 # Parameters
 
