@@ -65,6 +65,7 @@ const Value& CACHE_TEMPLATE_TYPE::Get(const Key& key) const {
   if (elem_it == cache_items_map.end()) {
     throw std::range_error{"No such element in the cache"};
   }
+
   cache_policy.Touch(key);
 
   return elem_it->second;
@@ -131,6 +132,7 @@ template class Cache<std::string, int, FIFOCachePolicy<std::string>>;
 // ARC
 template class Cache<int, int, ARCCachePolicy<int>>;
 template class Cache<std::string, int, ARCCachePolicy<std::string>>;
+template class Cache<int, std::string, ARCCachePolicy<int>>;
 
 
 }  // End machine namespace

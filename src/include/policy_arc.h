@@ -30,7 +30,9 @@ class ARCCachePolicy : public ICachePolicy<Key> {
 
   void Insert(const Key& key) override {
 
-    if (B1Entries.find(key)!=B1Entries.end()) {
+    std::cout << "Insert : " << key << "\n";
+
+    if (B1Entries.find(key) != B1Entries.end()) {
 
       //Check, whether we are outsized
       B1Entries.erase(key);
@@ -40,7 +42,7 @@ class ARCCachePolicy : public ICachePolicy<Key> {
       T1.Insert(key);
 
     }
-    else if (B2Entries.find(key)!=B2Entries.end()) {
+    else if (B2Entries.find(key) != B2Entries.end()) {
 
       B2.Erase(key);
       B2Entries.erase(key);
@@ -61,7 +63,9 @@ class ARCCachePolicy : public ICachePolicy<Key> {
 
   void Touch(const Key& key) override {
 
-    if (T1Entries.find(key)!=T1Entries.end()) {
+    std::cout << "Touch : " << key << "\n";
+
+    if (T1Entries.find(key) != T1Entries.end()) {
 
       T1Entries.erase(key);
       T1.Erase(key);
@@ -78,14 +82,13 @@ class ARCCachePolicy : public ICachePolicy<Key> {
 
   void Erase(UNUSED_ATTRIBUTE const Key& key) override {
 
-    // TODO: Pass size
-    size_t max_size = 10;
+    std::cout << "Erase : " << key << "\n";
 
-    if (T1Entries.find(key)!=T1Entries.end()) {
+    if (T1Entries.find(key) != T1Entries.end()) {
       B1.Insert(key);
       B1Entries.insert(key);
 
-      if (B1Entries.size() >= max_size/2) {
+      if (B1Entries.size() >= capacity/2) {
         auto victim = B1.Victim();
         B1.Erase(victim);
         B1Entries.erase(victim);
@@ -97,7 +100,7 @@ class ARCCachePolicy : public ICachePolicy<Key> {
       B2.Insert(key);
       B2Entries.insert(key);
 
-      if (B2Entries.size() >= max_size/2) {
+      if (B2Entries.size() >= capacity/2) {
         auto victim = B2.Victim();
         B2.Erase(victim);
         B2Entries.erase(victim);
