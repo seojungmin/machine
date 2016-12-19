@@ -5,10 +5,9 @@
 #include <set>
 
 #include "macros.h"
-#include "cache_policy.h"
-
-#include "lru_policy.h"
-#include "lfu_policy.h"
+#include "policy.h"
+#include "policy_lfu.h"
+#include "policy_lru.h"
 
 namespace machine {
 
@@ -17,12 +16,12 @@ class ARCCachePolicy : public ICachePolicy<Key> {
  public:
   using arc_iterator = typename std::list<Key>::const_iterator;
 
-  ARCCachePolicy(const size_t& max_size)
-  : T1(LRUCachePolicy<Key>(max_size)),
-    B1(LRUCachePolicy<Key>(max_size)),
-    T2(LFUCachePolicy<Key>(max_size)),
-    B2(LFUCachePolicy<Key>(max_size)),
-    max_size(max_size) {
+  ARCCachePolicy(const size_t& capacity)
+  : T1(LRUCachePolicy<Key>(capacity)),
+    B1(LRUCachePolicy<Key>(capacity)),
+    T2(LFUCachePolicy<Key>(capacity)),
+    B2(LFUCachePolicy<Key>(capacity)),
+    capacity(capacity) {
 
     // Nothing to do here!
   }
@@ -133,7 +132,8 @@ class ARCCachePolicy : public ICachePolicy<Key> {
   LFUCachePolicy<Key> B2;
   std::set<Key> B2Entries;
 
-  size_t max_size;
+  // capacity of cache
+  size_t capacity;
 
 };
 

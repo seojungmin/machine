@@ -2,12 +2,12 @@
 
 #pragma once
 
-#include "cache_policy.h"
+#include "policy.h"
 
 namespace machine {
 
 // Base class for all caching algorithms
-template <typename Key, typename Value, typename Policy = NoCachePolicy<Key>>
+template <typename Key, typename Value, typename Policy>
 class Cache {
  public:
 

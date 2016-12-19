@@ -8,10 +8,10 @@
 #include <unordered_map>
 
 #include "cache.h"
-#include "lru_policy.h"
-#include "lfu_policy.h"
-#include "fifo_policy.h"
-#include "arc_policy.h"
+#include "policy_arc.h"
+#include "policy_fifo.h"
+#include "policy_lfu.h"
+#include "policy_lru.h"
 
 namespace machine {
 

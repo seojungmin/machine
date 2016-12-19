@@ -6,7 +6,7 @@
 #include <unordered_map>
 
 #include "macros.h"
-#include "cache_policy.h"
+#include "policy.h"
 
 namespace machine {
 
@@ -15,7 +15,7 @@ class LRUCachePolicy : public ICachePolicy<Key> {
  public:
   using lru_iterator = typename std::list<Key>::const_iterator;
 
-  LRUCachePolicy(UNUSED_ATTRIBUTE const size_t& max_size){
+  LRUCachePolicy(UNUSED_ATTRIBUTE const size_t& capacity){
     // Nothing to do here!
   }
 
@@ -31,7 +31,9 @@ class LRUCachePolicy : public ICachePolicy<Key> {
   void Touch(const Key& key) override {
 
     // move the touched element at the beginning of the lru_queue
-    lru_queue.splice(lru_queue.cbegin(), lru_queue, key_finder[key]);
+    lru_queue.splice(lru_queue.cbegin(),
+                     lru_queue,
+                     key_finder[key]);
 
   }
 

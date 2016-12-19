@@ -5,7 +5,7 @@
 #include <list>
 
 #include "macros.h"
-#include "cache_policy.h"
+#include "policy.h"
 
 namespace machine {
 
@@ -13,7 +13,7 @@ template <typename Key>
 class FIFOCachePolicy : public ICachePolicy<Key> {
  public:
 
-  FIFOCachePolicy(UNUSED_ATTRIBUTE const size_t& max_size){
+  FIFOCachePolicy(UNUSED_ATTRIBUTE const size_t& capacity){
     // Nothing to do here!
   }
 

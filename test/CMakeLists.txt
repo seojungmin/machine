@@ -3,21 +3,21 @@
 ## TESTS
 
 # ---[ LRU TEST
-add_executable(lru_test lru_test.cpp)
-target_link_libraries(lru_test machine ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-add_test(NAME LRUTest COMMAND lru_test)
+add_executable(policy_lru_test policy_lru_test.cpp)
+target_link_libraries(policy_lru_test machine ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+add_test(NAME LRUTest COMMAND policy_lru_test)
 
 # ---[ LFU TEST
-add_executable(lfu_test lfu_test.cpp)
-target_link_libraries(lfu_test machine ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-add_test(NAME LFUTest COMMAND lfu_test)
+add_executable(policy_lfu_test policy_lfu_test.cpp)
+target_link_libraries(policy_lfu_test machine ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+add_test(NAME LFUTest COMMAND policy_lfu_test)
 
 # ---[ FIFO TEST
-add_executable(fifo_test fifo_test.cpp)
-target_link_libraries(fifo_test machine ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-add_test(NAME FIFOTest COMMAND fifo_test)
+add_executable(policy_fifo_test policy_fifo_test.cpp)
+target_link_libraries(policy_fifo_test machine ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+add_test(NAME FIFOTest COMMAND policy_fifo_test)
 
 # ---[ ARC TEST
-add_executable(arc_test arc_test.cpp)
-target_link_libraries(arc_test machine ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-add_test(NAME ARCTest COMMAND arc_test)
+add_executable(policy_arc_test policy_arc_test.cpp)
+target_link_libraries(policy_arc_test machine ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+add_test(NAME ARCTest COMMAND policy_arc_test)

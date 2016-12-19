@@ -8,7 +8,7 @@
 #include <iostream>
 
 #include "macros.h"
-#include "cache_policy.h"
+#include "policy.h"
 
 namespace machine {
 
@@ -17,7 +17,7 @@ class LFUCachePolicy : public ICachePolicy<Key> {
  public:
   using lfu_iterator = typename std::multimap<std::size_t, Key>::iterator;
 
-  LFUCachePolicy(UNUSED_ATTRIBUTE const size_t& max_size){
+  LFUCachePolicy(UNUSED_ATTRIBUTE const size_t& capacity){
     // Nothing to do here!
   }
 
@@ -28,7 +28,9 @@ class LFUCachePolicy : public ICachePolicy<Key> {
     constexpr std::size_t INIT_VAL = 1;
 
     // all new value initialized with the frequency 1
-    lfu_storage[key] = frequency_storage.emplace_hint(frequency_storage.cbegin(), INIT_VAL, key);
+    lfu_storage[key] = frequency_storage.emplace_hint(frequency_storage.cbegin(),
+                                                      INIT_VAL,
+                                                      key);
 
   }
 
@@ -36,11 +38,13 @@ class LFUCachePolicy : public ICachePolicy<Key> {
 
     // get the previous frequency value of a key
     auto elem_for_update = lfu_storage[key];
-    auto updated_elem = std::make_pair(elem_for_update->first + 1, elem_for_update->second);
+    auto updated_elem = std::make_pair(elem_for_update->first + 1,
+                                       elem_for_update->second);
 
     // update the previous value
     frequency_storage.erase(elem_for_update);
-    lfu_storage[key] = frequency_storage.emplace_hint(frequency_storage.cend(), std::move(updated_elem));
+    lfu_storage[key] = frequency_storage.emplace_hint(frequency_storage.cend(),
+                                                      std::move(updated_elem));
 
   }
 

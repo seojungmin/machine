@@ -6,8 +6,8 @@
 #include <unordered_map>
 #include <mutex>
 
+#include "policy_fifo.h"
 #include "cache.h"
-#include "fifo_policy.h"
 
 namespace machine {
 
@@ -17,7 +17,9 @@ template <typename Key, typename Value>
 using fifo_cache_t = Cache<Key, Value, FIFOCachePolicy<Key>>;
 
 TEST(FIFOCache, Simple_Test) {
-  fifo_cache_t<int, int> fc(2, fifo_t<int>(2));
+  size_t cache_capacity = 2;
+  fifo_cache_t<int, int> fc(cache_capacity,
+                            fifo_t<int>(cache_capacity));
 
   fc.Put(1, 10);
   fc.Put(2, 20);
@@ -37,7 +39,9 @@ TEST(FIFOCache, Simple_Test) {
 }
 
 TEST(FIFOCache, Missing_Value) {
-  fifo_cache_t<int, int> fc(2, fifo_t<int>(2));
+  size_t cache_capacity = 2;
+  fifo_cache_t<int, int> fc(cache_capacity,
+                            fifo_t<int>(cache_capacity));
 
   fc.Put(1, 10);
 
@@ -48,7 +52,8 @@ TEST(FIFOCache, Missing_Value) {
 
 TEST(FIFOCache, Sequence_Test) {
   constexpr int TEST_SIZE = 10;
-  fifo_cache_t<std::string, int> fc(TEST_SIZE, fifo_t<std::string>(TEST_SIZE));
+  fifo_cache_t<std::string, int> fc(TEST_SIZE,
+                                    fifo_t<std::string>(TEST_SIZE));
 
   for (size_t i = 0; i < TEST_SIZE; ++i) {
     fc.Put(std::to_string('0' + i), i);
