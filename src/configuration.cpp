@@ -31,19 +31,19 @@ static struct option opts[] = {
 
 static void ValidateHierarchyType(const configuration &state) {
   if (state.hierarchy_type < 1 || state.hierarchy_type > 3) {
-    printf("Invalid hierarchy_type :: %d", state.hierarchy_type);
+    printf("Invalid hierarchy_type :: %d\n", state.hierarchy_type);
     exit(EXIT_FAILURE);
   }
   else {
     switch (state.hierarchy_type) {
       case HIERARCHY_TYPE_DRAM_NVM:
-        printf("%s : HIERARCHY_TYPE_DRAM_NVM", "hierarchy_type ");
+        printf("%30s : %s\n", "hierarchy_type", "HIERARCHY_TYPE_DRAM_NVM");
         break;
       case HIERARCHY_TYPE_DRAM_NVM_SSD:
-        printf("%s : HIERARCHY_TYPE_DRAM_NVM_SSD", "hierarchy_type ");
+        printf("%30s : %s\n", "hierarchy_type", "HIERARCHY_TYPE_DRAM_NVM_SSD");
         break;
       case HIERARCHY_TYPE_DRAM_NVM_SSD_HDD:
-        printf("%s : HIERARCHY_TYPE_DRAM_NVM_SSD_HDD", "hierarchy_type ");
+        printf("%30s : %s\n", "hierarchy_type", "HIERARCHY_TYPE_DRAM_NVM_SSD_HDD");
         break;
       default:
         break;
@@ -53,16 +53,16 @@ static void ValidateHierarchyType(const configuration &state) {
 
 static void ValidateLoggingType(const configuration &state) {
   if (state.logging_type < 1 || state.logging_type > 2) {
-    printf("Invalid logging_type :: %d", state.logging_type);
+    printf("Invalid logging_type :: %d\n", state.logging_type);
     exit(EXIT_FAILURE);
   }
   else {
     switch (state.logging_type) {
       case LOGGING_TYPE_WAL:
-        printf("%s : LOGGING_TYPE_WAL", "logging_type ");
+        printf("%30s : %s\n", "logging_type", "LOGGING_TYPE_WAL");
         break;
       case LOGGING_TYPE_WBL:
-        printf("%s : LOGGING_TYPE_WBL", "logging_type ");
+        printf("%30s : %s\n", "logging_type", "LOGGING_TYPE_WBL");
         break;
       default:
         break;
@@ -72,16 +72,16 @@ static void ValidateLoggingType(const configuration &state) {
 
 static void ValidateMigrationType(const configuration &state) {
   if (state.migration_type < 1 || state.migration_type > 3) {
-    printf("Invalid migration_type :: %d", state.migration_type);
+    printf("Invalid migration_type :: %d\n", state.migration_type);
     exit(EXIT_FAILURE);
   }
   else {
     switch (state.migration_type) {
       case MIGRATION_TYPE_DOWNWARDS:
-        printf("%s : MIGRATION_TYPE_DOWNWARDS", "migration_type ");
+        printf("%30s : %s\n", "migration_type", "MIGRATION_TYPE_DOWNWARDS");
         break;
       case MIGRATION_TYPE_BOTHWAYS:
-        printf("%s : MIGRATION_TYPE_BOTHWAYS", "migration_type ");
+        printf("%30s : %s\n", "migration_type", "MIGRATION_TYPE_BOTHWAYS");
         break;
       default:
         break;
@@ -90,7 +90,7 @@ static void ValidateMigrationType(const configuration &state) {
 }
 
 static void ValidateDirectNVM(const configuration &state) {
-  printf("Direct NVM : %d", state.direct_nvm);
+  printf("%30s : %d\n", "direct_nvm", state.direct_nvm);
 }
 
 static void ConstructDeviceList(configuration &state){
@@ -158,16 +158,18 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
         break;
 
       default:
-        printf("Unknown option: -%c-", c);
+        printf("Unknown option: -%c-\n", c);
         Usage();
     }
   }
 
   // Run validators
+  printf("---------------------------------------------------------------------------\n");
   ValidateHierarchyType(state);
   ValidateLoggingType(state);
   ValidateMigrationType(state);
   ValidateDirectNVM(state);
+  printf("---------------------------------------------------------------------------\n");
 
   // Construct device list
   ConstructDeviceList(state);
