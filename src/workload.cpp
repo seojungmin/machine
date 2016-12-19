@@ -8,6 +8,7 @@
 
 #include "macros.h"
 #include "workload.h"
+#include "distribution.h"
 
 namespace machine {
 
@@ -39,6 +40,30 @@ UNUSED_ATTRIBUTE static void WriteOutput(double duration) {
 void MachineHelper() {
 
   // Run workload
+
+  // Determine size of hierarchy
+  size_t total_slots = 0;
+  for(auto device : state.devices){
+    auto device_type = device.device_type;
+    if(device_type != DeviceType::DEVICE_TYPE_DRAM){
+      total_slots += device.device_size;
+    }
+  }
+
+  printf("Total slots: %lu\n", total_slots);
+
+  size_t upper_bound = total_slots;
+  double theta = 1.5;
+  size_t sample_count = 10;
+  size_t sample_itr;
+
+  ZipfDistribution zipf_generator(upper_bound, theta);
+
+  for(sample_itr = 0; sample_itr < sample_count; sample_itr++){
+    auto sample = zipf_generator.GetNextNumber();
+    printf("sample %lu : %lu\n", sample_itr, sample);
+  }
+
 
 }
 

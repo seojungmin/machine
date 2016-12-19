@@ -38,6 +38,15 @@ ${CMAKE_THREAD_LIBS_INIT}
 )
 add_test(NAME ARCTest COMMAND policy_arc_test)
 
+# ---[ DISTRIBUTION TEST
+add_executable(distribution_test distribution_test.cpp)
+target_link_libraries(distribution_test machine_library
+${GTEST_BOTH_LIBRARIES} 
+${GLOG_LIBRARIES} 
+${CMAKE_THREAD_LIBS_INIT}
+)
+add_test(NAME DistributionTest COMMAND distribution_test)
+
 ## MACHINE
 
 # ---[ MACHINE

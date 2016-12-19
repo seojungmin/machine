@@ -11,6 +11,8 @@
 
 namespace machine {
 
+template <typename Key>
+using arc_t = ARCCachePolicy<Key>;
 template <typename Key, typename Value>
 using arc_cache_t = Cache<Key, Value, ARCCachePolicy<Key>>;
 
