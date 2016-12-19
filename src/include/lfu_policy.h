@@ -48,7 +48,7 @@ class LFUCachePolicy : public ICachePolicy<Key> {
 
   }
 
-  const Key& ReplCandidate() const override {
+  const Key& Victim() const override {
 
     // at the beginning of the frequency_storage we have the
     // least frequency used value

@@ -22,7 +22,7 @@ class ICachePolicy {
   virtual void Erase(const Key& key) = 0;
 
   // return a key of a replacement candidate
-  virtual const Key& ReplCandidate() const = 0;
+  virtual const Key& Victim() const = 0;
 
 };
 
@@ -46,7 +46,7 @@ class NoCachePolicy : public ICachePolicy<Key> {
   }
 
   // return a key of a displacement candidate
-  const Key& ReplCandidate() const override {
+  const Key& Victim() const override {
     return *key_storage.crbegin();
   }
 

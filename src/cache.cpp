@@ -42,7 +42,7 @@ void CACHE_TEMPLATE_TYPE::Put(const Key& key,
   if (elem_it == cache_items_map.end()) {
     // add new element to the cache
     if (Size() + 1 > max_cache_size) {
-      auto disp_candidate_key = cache_policy.ReplCandidate();
+      auto disp_candidate_key = cache_policy.Victim();
 
       Erase(disp_candidate_key);
     }
@@ -113,13 +113,17 @@ CACHE_TEMPLATE_TYPE::FindElem(const Key& key) const {
 
 }
 
-// Instantiatiations
+// Instantiations
+
+// LRU
 template class Cache<int, int, LRUCachePolicy<int>>;
 template class Cache<std::string, int, LRUCachePolicy<std::string>>;
 
+// LFU
 template class Cache<int, int, LFUCachePolicy<int>>;
 template class Cache<std::string, int, LFUCachePolicy<std::string>>;
 
+// FIFO
 template class Cache<int, int, FIFOCachePolicy<int>>;
 template class Cache<std::string, int, FIFOCachePolicy<std::string>>;
 

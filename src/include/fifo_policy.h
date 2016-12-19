@@ -36,7 +36,7 @@ class FIFOCachePolicy : public ICachePolicy<Key> {
   }
 
   // return a key of a replacement candidate
-  const Key& ReplCandidate() const override {
+  const Key& Victim() const override {
 
     return fifo_queue.back();
 
