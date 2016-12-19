@@ -117,7 +117,7 @@ class ARCCachePolicy : public ICachePolicy<Key> {
   // return a key of a displacement candidate
   const Key& Victim() const override {
 
-    if (T1Entries.size()>T2Entries.size()) {
+    if (T1Entries.size() > T2Entries.size()) {
       return T1.Victim();
     } else {
       return T2.Victim();
