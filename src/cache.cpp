@@ -120,14 +120,17 @@ CACHE_TEMPLATE_TYPE::FindElem(const Key& key) const {
 // LRU
 template class Cache<int, int, LRUCachePolicy<int>>;
 template class Cache<std::string, int, LRUCachePolicy<std::string>>;
+template class Cache<int, std::string, LRUCachePolicy<int>>;
 
 // LFU
 template class Cache<int, int, LFUCachePolicy<int>>;
 template class Cache<std::string, int, LFUCachePolicy<std::string>>;
+template class Cache<int, std::string, LFUCachePolicy<int>>;
 
 // FIFO
 template class Cache<int, int, FIFOCachePolicy<int>>;
 template class Cache<std::string, int, FIFOCachePolicy<std::string>>;
+template class Cache<int, std::string, FIFOCachePolicy<int>>;
 
 // ARC
 template class Cache<int, int, ARCCachePolicy<int>>;

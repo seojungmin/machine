@@ -102,4 +102,18 @@ TEST(LFUCache, FrequencyIssue) {
   EXPECT_THROW(cache.Get(6), std::range_error);
 }
 
+TEST(LFUCache, CheckVictim) {
+  size_t cache_capacity = 3;
+  lfu_cache_t<int, std::string> cache(cache_capacity,
+                                      lfu_t<int>(cache_capacity));
+
+  cache.Put(1,"data1");
+  cache.Put(2,"data2");
+  cache.Put(3,"data3");
+  cache.Put(4,"data4");
+
+  EXPECT_EQ(cache.Size(), 3);
+
+}
+
 }  // End machine namespace

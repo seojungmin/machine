@@ -53,4 +53,18 @@ TEST(LRUCache, KeepsAllValuesWithinCapacity) {
   }
 }
 
+TEST(LRUCache, CheckVictim) {
+  size_t cache_capacity = 3;
+  lru_cache_t<int, std::string> cache(cache_capacity,
+                                      lru_t<int>(cache_capacity));
+
+  cache.Put(1,"data1");
+  cache.Put(2,"data2");
+  cache.Put(3,"data3");
+  cache.Put(4,"data4");
+
+  EXPECT_EQ(cache.Size(), 3);
+
+}
+
 }  // End machine namespace
