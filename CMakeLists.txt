@@ -31,6 +31,15 @@ include_directories(${GTEST_INCLUDE_DIRS})
 
 find_package(Threads REQUIRED)
 
+# -- [ Glog
+
+find_package(Glog REQUIRED)
+include_directories(${GLOG_INCLUDE_DIRS})
+
+# -- [ Gflags
+
+find_package(gflags REQUIRED)
+
 # ---[ Flags
 if(UNIX OR APPLE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wall -Wextra -Werror -lpthread")

@@ -4,6 +4,8 @@
 
 #include <set>
 
+#include <glog/logging.h>
+
 #include "macros.h"
 #include "policy.h"
 #include "policy_lfu.h"
@@ -30,7 +32,7 @@ class ARCCachePolicy : public ICachePolicy<Key> {
 
   void Insert(const Key& key) override {
 
-    std::cout << "Insert : " << key << "\n";
+    DLOG(INFO) << "Insert : " << key << "\n";
 
     if (B1Entries.find(key) != B1Entries.end()) {
 
@@ -63,7 +65,7 @@ class ARCCachePolicy : public ICachePolicy<Key> {
 
   void Touch(const Key& key) override {
 
-    std::cout << "Touch : " << key << "\n";
+    DLOG(INFO) << "Touch : " << key << "\n";
 
     if (T1Entries.find(key) != T1Entries.end()) {
 
@@ -82,7 +84,7 @@ class ARCCachePolicy : public ICachePolicy<Key> {
 
   void Erase(UNUSED_ATTRIBUTE const Key& key) override {
 
-    std::cout << "Erase : " << key << "\n";
+    DLOG(INFO) << "Erase : " << key << "\n";
 
     if (T1Entries.find(key) != T1Entries.end()) {
       B1.Insert(key);
