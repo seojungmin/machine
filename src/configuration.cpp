@@ -164,12 +164,15 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
   }
 
   // Run validators
-  printf("---------------------------------------------------------------------------\n");
+  printf("//===----------------------------------------------------------------------===//\n");
+  printf("//                               MACHINE                                      //\n");
+  printf("//===----------------------------------------------------------------------===//\n");
+
   ValidateHierarchyType(state);
   ValidateLoggingType(state);
   ValidateMigrationType(state);
   ValidateDirectNVM(state);
-  printf("---------------------------------------------------------------------------\n");
+  printf("//===----------------------------------------------------------------------===//\n");
 
   // Construct device list
   ConstructDeviceList(state);
