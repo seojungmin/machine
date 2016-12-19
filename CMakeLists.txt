@@ -1,6 +1,6 @@
 #Preamble
 cmake_minimum_required (VERSION 2.6)
-project (machine CXX)
+project (machine C CXX)
 
 # ---[ CTest
 include(CTest)
@@ -25,11 +25,13 @@ enable_testing()
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
 
+# -- [ Threads
+
 find_package(Threads REQUIRED)
 
 # ---[ Flags
 if(UNIX OR APPLE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wall -Wextra -Werror -mcx16")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wall -Wextra -Werror -lpthread")
 endif()
 
 # ---[ Subdirectories
