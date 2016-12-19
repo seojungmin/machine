@@ -1,5 +1,8 @@
-# Create a library called "machine" which includes the desired source files
-# The extension is already found. Any number of sources could be listed here.
+##################################################################################
+
+# --[ Machine library
+
+# Create our library
 add_library (machine cache.cpp)
 
 # Make sure the compiler can find include files for our machine library

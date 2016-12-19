@@ -9,6 +9,8 @@
 
 #include "cache.h"
 #include "lru_policy.h"
+#include "lfu_policy.h"
+#include "fifo_policy.h"
 
 namespace machine {
 
@@ -111,9 +113,16 @@ CACHE_TEMPLATE_TYPE::FindElem(const Key& key) const {
 
 }
 
-// Instantiate
+// Instantiatiations
 template class Cache<int, int, LRUCachePolicy<int>>;
 template class Cache<std::string, int, LRUCachePolicy<std::string>>;
+
+template class Cache<int, int, LFUCachePolicy<int>>;
+template class Cache<std::string, int, LFUCachePolicy<std::string>>;
+
+template class Cache<int, int, FIFOCachePolicy<int>>;
+template class Cache<std::string, int, FIFOCachePolicy<std::string>>;
+
 
 }  // End machine namespace
 
