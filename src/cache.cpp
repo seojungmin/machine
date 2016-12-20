@@ -35,20 +35,24 @@ void CACHE_TEMPLATE_TYPE::Put(const Key& key,
                               const Value& value) {
 
   operation_guard{cache_mutex_};
-  auto elem_it = FindElem(key);
+  auto entry_location = LocateEntry(key);
 
-  if (elem_it == cache_items_map.end()) {
+  if (entry_location == cache_items_map.end()) {
+
     // add new element to the cache
-    if (Size() + 1 > capacity_) {
+    if (CurrentCapacity() + 1 > capacity_) {
       auto disp_candidate_key = cache_policy_.Victim();
-
       Erase(disp_candidate_key);
     }
 
     Insert(key, value);
-  } else {
+
+  }
+  else {
+
     // update previous value
     Update(key, value);
+
   }
 
 }
@@ -57,7 +61,7 @@ CACHE_TEMPLATE_ARGUMENT
 const Value& CACHE_TEMPLATE_TYPE::Get(const Key& key) const {
 
   operation_guard{cache_mutex_};
-  auto elem_it = FindElem(key);
+  auto elem_it = LocateEntry(key);
 
   if (elem_it == cache_items_map.end()) {
     throw std::range_error{"No such element in the cache"};
@@ -70,7 +74,7 @@ const Value& CACHE_TEMPLATE_TYPE::Get(const Key& key) const {
 }
 
 CACHE_TEMPLATE_ARGUMENT
-size_t CACHE_TEMPLATE_TYPE::Size() const {
+size_t CACHE_TEMPLATE_TYPE::CurrentCapacity() const {
 
   operation_guard{cache_mutex_};
 
@@ -106,7 +110,7 @@ void CACHE_TEMPLATE_TYPE::Update(const Key& key,
 
 CACHE_TEMPLATE_ARGUMENT
 typename CACHE_TEMPLATE_TYPE::const_iterator
-CACHE_TEMPLATE_TYPE::FindElem(const Key& key) const {
+CACHE_TEMPLATE_TYPE::LocateEntry(const Key& key) const {
 
   return cache_items_map.find(key);
 

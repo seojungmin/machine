@@ -22,7 +22,7 @@ class Cache {
 
   const Value& Get(const Key& key) const;
 
-  size_t Size() const;
+  size_t CurrentCapacity() const;
 
  protected:
 
@@ -32,7 +32,7 @@ class Cache {
 
   void Update(const Key& key, const Value& value);
 
-  const_iterator FindElem(const Key& key) const;
+  const_iterator LocateEntry(const Key& key) const;
 
  private:
   std::unordered_map<Key, Value> cache_items_map;
