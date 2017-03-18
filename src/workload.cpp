@@ -56,14 +56,26 @@ void MachineHelper() {
   double theta = 1.5;
   size_t sample_count = 10;
   size_t sample_itr;
+  double seed = 23;
+  srand(seed);
+  int update_ratio = 0;
 
   ZipfDistribution zipf_generator(upper_bound, theta);
+  UniformDistribution uniform_generator(seed);
 
   for(sample_itr = 0; sample_itr < sample_count; sample_itr++){
     auto sample = zipf_generator.GetNextNumber();
+    auto operation_sample = rand() % 100;
     printf("sample %lu : %lu\n", sample_itr, sample);
-  }
 
+    if(operation_sample < update_ratio){
+      printf("Write\n");
+    }
+    else {
+      printf("Read\n");
+    }
+
+  }
 
 }
 

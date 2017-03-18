@@ -8,10 +8,10 @@
 
 namespace machine {
 
-// Fast random number generator
-class FastRandom {
+// Fast uniform random number generator
+class UniformDistribution {
  public:
-  FastRandom(unsigned long seed) : seed(0) { set_seed0(seed); }
+  UniformDistribution(unsigned long seed) : seed(0) { set_seed0(seed); }
 
   inline unsigned long next() {
     return ((unsigned long)next(32) << 32) + next(32);
@@ -24,6 +24,10 @@ class FastRandom {
   /** [0.0, 1.0) */
   inline double NextUniform() {
     return (((unsigned long)next(26) << 27) + next(27)) / (double)(1L << 53);
+  }
+
+  uint64_t GetNextNumber() {
+    return NextUniform();
   }
 
   inline char next_char() { return next(8) % 256; }
@@ -79,9 +83,11 @@ class ZipfDistribution {
     for (uint64_t i = 1; i <= n; i++) sum += pow(1.0 / i, theta);
     return sum;
   }
+
   int GenerateInteger(const int &min, const int &max) {
     return rand_generator.next() % (max - min + 1) + min;
   }
+
   uint64_t GetNextNumber() {
     double alpha = 1 / (1 - zipf_theta);
     double zetan = denom;
@@ -98,7 +104,7 @@ class ZipfDistribution {
   double zipf_theta;
   double denom;
   double zeta_2_theta;
-  FastRandom rand_generator;
+  UniformDistribution rand_generator;
 };
 
 
