@@ -28,6 +28,16 @@ enum DeviceType {
   DEVICE_TYPE_HDD = 4
 };
 
+enum CachingType {
+  CACHING_TYPE_INVALID = 0,
+
+  CACHING_TYPE_FIFO = 1,
+  CACHING_TYPE_LRU = 2,
+  CACHING_TYPE_LFU = 3,
+  CACHING_TYPE_ARC = 4
+
+};
+
 struct Device {
 
   Device(const DeviceType& device_type,
@@ -93,10 +103,28 @@ class configuration {
   // migration type
   MigrationType migration_type;
 
+  // caching type
+  CachingType caching_type;
+
   // Verbose output
   bool verbose;
 
 };
+
+extern size_t dram_device_size;
+extern size_t nvm_device_size;
+extern size_t ssd_device_size;
+extern size_t hdd_device_size;
+
+extern size_t read_dram_latency;
+extern size_t read_nvm_latency;
+extern size_t read_ssd_latency;
+extern size_t read_hdd_latency;
+
+extern size_t write_dram_latency;
+extern size_t write_nvm_latency;
+extern size_t write_ssd_latency;
+extern size_t write_hdd_latency;
 
 void Usage(FILE *out);
 

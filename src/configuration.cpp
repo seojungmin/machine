@@ -46,7 +46,6 @@ std::string DeviceTypeToString(const DeviceType& device_type){
 
 }
 
-
 static void ValidateHierarchyType(const configuration &state) {
   if (state.hierarchy_type < 1 || state.hierarchy_type > 3) {
     printf("Invalid hierarchy_type :: %d\n", state.hierarchy_type);
@@ -107,27 +106,36 @@ static void ValidateMigrationType(const configuration &state) {
   }
 }
 
+static void ValidateCachingType(const configuration &state) {
+  if (state.caching_type < 1 || state.caching_type > 4) {
+    printf("Invalid caching_type :: %d\n", state.caching_type);
+    exit(EXIT_FAILURE);
+  }
+  else {
+    switch (state.caching_type) {
+      case CACHING_TYPE_FIFO:
+        printf("%30s : %s\n", "caching_type", "CACHING_TYPE_FIFO");
+        break;
+      case CACHING_TYPE_LRU:
+        printf("%30s : %s\n", "caching_type", "CACHING_TYPE_LRU");
+        break;
+      case CACHING_TYPE_LFU:
+        printf("%30s : %s\n", "caching_type", "CACHING_TYPE_LFU");
+        break;
+      case CACHING_TYPE_ARC:
+        printf("%30s : %s\n", "caching_type", "CACHING_TYPE_ARC");
+        break;
+      default:
+        break;
+    }
+  }
+}
+
 static void ValidateDirectNVM(const configuration &state) {
   printf("%30s : %d\n", "direct_nvm", state.direct_nvm);
 }
 
 static void ConstructDeviceList(configuration &state){
-
-  // TODO: fix size of all devices to 1000 slots
-  const size_t dram_device_size = 5;
-  const size_t nvm_device_size = 10;
-  const size_t ssd_device_size = 20;
-  const size_t hdd_device_size = 50;
-
-  const size_t read_dram_latency = 10;
-  const size_t read_nvm_latency = 20;
-  const size_t read_ssd_latency = 100;
-  const size_t read_hdd_latency = 1000;
-
-  const size_t write_dram_latency = 10;
-  const size_t write_nvm_latency = 20;
-  const size_t write_ssd_latency = 100;
-  const size_t write_hdd_latency = 1000;
 
   Device dram_device(DEVICE_TYPE_DRAM,
                      dram_device_size,
@@ -218,7 +226,10 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
   ValidateHierarchyType(state);
   ValidateLoggingType(state);
   ValidateMigrationType(state);
+  ValidateCachingType(state);
   ValidateDirectNVM(state);
+
+
   printf("//===----------------------------------------------------------------------===//\n");
 
   // Construct device list
