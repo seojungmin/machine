@@ -55,6 +55,8 @@ struct Device {
 
 };
 
+std::string DeviceTypeToString(const DeviceType& device_type);
+
 enum LoggingType {
   LOGGING_TYPE_INVALID = 0,
 

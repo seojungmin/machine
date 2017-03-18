@@ -29,6 +29,24 @@ static struct option opts[] = {
     {NULL, 0, NULL, 0}
 };
 
+std::string DeviceTypeToString(const DeviceType& device_type){
+
+  switch (device_type){
+    case DEVICE_TYPE_DRAM:
+      return "DRAM";
+    case DEVICE_TYPE_NVM:
+      return "NVM";
+    case DEVICE_TYPE_SSD:
+      return "SSD";
+    case DEVICE_TYPE_HDD:
+      return "HDD";
+    default:
+      return "INVALID";
+  }
+
+}
+
+
 static void ValidateHierarchyType(const configuration &state) {
   if (state.hierarchy_type < 1 || state.hierarchy_type > 3) {
     printf("Invalid hierarchy_type :: %d\n", state.hierarchy_type);
