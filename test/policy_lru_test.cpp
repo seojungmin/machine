@@ -57,7 +57,7 @@ TEST(LRUCache, CheckVictim) {
   cache.Put(3,"data3");
   cache.Put(4,"data4");
 
-  EXPECT_EQ(cache.Size(), 3);
+  EXPECT_EQ(cache.CurrentCapacity(), 3);
 
 }
 

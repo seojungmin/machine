@@ -38,7 +38,7 @@ include_directories(${GLOG_INCLUDE_DIRS})
 
 # -- [ Gflags
 
-find_package(gflags REQUIRED)
+find_package(GFlags REQUIRED)
 
 # ---[ Flags
 if(UNIX OR APPLE)
