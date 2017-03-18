@@ -96,12 +96,41 @@ static void ValidateDirectNVM(const configuration &state) {
 static void ConstructDeviceList(configuration &state){
 
   // TODO: fix size of all devices to 1000 slots
-  const size_t device_size = 1000;
+  const size_t dram_device_size = 5;
+  const size_t nvm_device_size = 10;
+  const size_t ssd_device_size = 20;
+  const size_t hdd_device_size = 50;
 
-  Device dram_device(DEVICE_TYPE_DRAM, device_size);
-  Device nvm_device(DEVICE_TYPE_NVM, device_size);
-  Device ssd_device(DEVICE_TYPE_SSD, device_size);
-  Device hdd_device(DEVICE_TYPE_HDD, device_size);
+  const size_t read_dram_latency = 10;
+  const size_t read_nvm_latency = 20;
+  const size_t read_ssd_latency = 100;
+  const size_t read_hdd_latency = 1000;
+
+  const size_t write_dram_latency = 10;
+  const size_t write_nvm_latency = 20;
+  const size_t write_ssd_latency = 100;
+  const size_t write_hdd_latency = 1000;
+
+  Device dram_device(DEVICE_TYPE_DRAM,
+                     dram_device_size,
+                     read_dram_latency,
+                     write_dram_latency
+  );
+  Device nvm_device(DEVICE_TYPE_NVM,
+                    nvm_device_size,
+                    read_nvm_latency,
+                    write_nvm_latency
+  );
+  Device ssd_device(DEVICE_TYPE_SSD,
+                    ssd_device_size,
+                    read_ssd_latency,
+                    write_ssd_latency
+  );
+  Device hdd_device(DEVICE_TYPE_HDD,
+                    hdd_device_size,
+                    read_hdd_latency,
+                    write_hdd_latency
+  );
 
   switch (state.hierarchy_type) {
     case HIERARCHY_TYPE_DRAM_NVM: {
