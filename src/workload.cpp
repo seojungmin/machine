@@ -50,7 +50,7 @@ void MachineHelper() {
     }
   }
 
-  printf("Total slots: %lu\n", total_slots);
+  std::cout << "Total slots : " << total_slots << "\n";
 
   size_t upper_bound = total_slots;
   double theta = 1.5;
@@ -58,21 +58,21 @@ void MachineHelper() {
   size_t sample_itr;
   double seed = 23;
   srand(seed);
-  int update_ratio = 0;
+  int update_ratio = 20;
 
   ZipfDistribution zipf_generator(upper_bound, theta);
   UniformDistribution uniform_generator(seed);
 
   for(sample_itr = 0; sample_itr < sample_count; sample_itr++){
-    auto sample = zipf_generator.GetNextNumber();
+    auto block = zipf_generator.GetNextNumber();
     auto operation_sample = rand() % 100;
-    printf("sample %lu : %lu\n", sample_itr, sample);
 
+    std::cout << "Operation : " << sample_itr << " ";
     if(operation_sample < update_ratio){
-      printf("Write\n");
+      std::cout << "Write block : " << block << "\n";
     }
     else {
-      printf("Read\n");
+      std::cout << "Read  block : " << block << "\n";
     }
 
   }
