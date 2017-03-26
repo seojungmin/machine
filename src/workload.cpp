@@ -30,17 +30,14 @@ std::map<size_t, DeviceType> storage_block_map;
 size_t dram_device_size = 5;
 size_t nvm_device_size = 10;
 size_t ssd_device_size = 20;
-size_t hdd_device_size = 50;
 
 size_t read_dram_latency = 10;
 size_t read_nvm_latency = 20;
 size_t read_ssd_latency = 100;
-size_t read_hdd_latency = 1000;
 
 size_t write_dram_latency = 10;
 size_t write_nvm_latency = 20;
 size_t write_ssd_latency = 100;
-size_t write_hdd_latency = 1000;
 
 UNUSED_ATTRIBUTE static void WriteOutput(double duration) {
   // Convert to ms
@@ -98,8 +95,7 @@ DeviceType LocateStorageDevice(const size_t& block_id){
     device_type = storage_block_map[block_id];
 
     // Check device type
-    if(device_type != DeviceType::DEVICE_TYPE_SSD &&
-        device_type != DeviceType::DEVICE_TYPE_HDD){
+    if(device_type != DeviceType::DEVICE_TYPE_SSD){
       std::cout << "Invalid storage device";
       exit(EXIT_FAILURE);
     }
@@ -120,14 +116,10 @@ void CopyToDRAM(const size_t& block_id){
     total_duration += read_ssd_latency;
   }
 
-  if(storage_device_type == DeviceType::DEVICE_TYPE_HDD){
-    total_duration += read_hdd_latency;
-  }
-
 }
 
 void ReadBlock(const size_t& block_id){
-  std::cout << "Read  block : " << block_id << "\n";
+  std::cout << "READ  " << block_id << "\n";
 
   auto memory_device_type = LocateMemoryDevice(block_id);
   auto storage_device_type = LocateStorageDevice(block_id);
@@ -155,7 +147,7 @@ void ReadBlock(const size_t& block_id){
 }
 
 void WriteBlock(const size_t& block_id){
-  std::cout << "Write block : " << block_id << "\n";
+  std::cout << "WRITE " << block_id << "\n";
 
 }
 
@@ -195,7 +187,7 @@ void MachineHelper() {
     auto block_id = zipf_generator.GetNextNumber();
     auto operation_sample = rand() % 100;
 
-    std::cout << "Operation : " << sample_itr << "\n";
+    std::cout << "Operation : " << sample_itr << " :: ";
     if(operation_sample < update_ratio) {
       WriteBlock(block_id);
     }
@@ -204,6 +196,7 @@ void MachineHelper() {
     }
 
     std::cout << "Duration : " << total_duration << "\n";
+    std::cout << "-------------------------";
 
   }
 

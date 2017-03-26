@@ -8,14 +8,16 @@
 #include <string>
 #include <vector>
 
+#include "cache.h"
+
 namespace machine {
 
 enum HierarchyType {
   HIERARCHY_TYPE_INVALID = 0,
 
-  HIERARCHY_TYPE_DRAM_NVM = 1,
-  HIERARCHY_TYPE_DRAM_NVM_SSD = 2,
-  HIERARCHY_TYPE_DRAM_NVM_SSD_HDD = 3
+  HIERARCHY_TYPE_NVM = 1,
+  HIERARCHY_TYPE_DRAM_NVM = 2,
+  HIERARCHY_TYPE_DRAM_NVM_SSD = 3
 
 };
 
@@ -24,30 +26,22 @@ enum DeviceType {
 
   DEVICE_TYPE_DRAM = 1,
   DEVICE_TYPE_NVM = 2,
-  DEVICE_TYPE_SSD = 3,
-  DEVICE_TYPE_HDD = 4
-};
-
-enum CachingType {
-  CACHING_TYPE_INVALID = 0,
-
-  CACHING_TYPE_FIFO = 1,
-  CACHING_TYPE_LRU = 2,
-  CACHING_TYPE_LFU = 3,
-  CACHING_TYPE_ARC = 4
+  DEVICE_TYPE_SSD = 3
 
 };
 
 struct Device {
 
-  Device(const DeviceType& device_type,
+  Device(const CachingType& caching_type,
+         const DeviceType& device_type,
          const size_t& device_size,
          const size_t& read_latency,
          const size_t& write_latency)
   : device_type(device_type),
     device_size(device_size),
     read_latency(read_latency),
-    write_latency(write_latency) {
+    write_latency(write_latency),
+    cache(caching_type, device_size){
     // Nothing to do here!
   }
 
@@ -62,6 +56,9 @@ struct Device {
 
   // write latency
   size_t write_latency = 0;
+
+  // storage cache
+  StorageCache cache;
 
 };
 

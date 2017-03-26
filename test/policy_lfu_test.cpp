@@ -19,30 +19,30 @@ TEST(LFUCache, Simple_Test) {
   constexpr size_t SECOND_FREQ = 9;
   constexpr size_t THIRD_FREQ = 8;
   size_t cache_capacity = 3;
-  lfu_cache_t<std::string, int> cache(cache_capacity);
+  lfu_cache_t<int, int> cache(cache_capacity);
 
-  cache.Put("A", 1);
-  cache.Put("B", 2);
-  cache.Put("C", 3);
+  cache.Put(1, 1);
+  cache.Put(2, 2);
+  cache.Put(3, 3);
 
   for (size_t i = 0; i < FIRST_FREQ; ++i) {
-    EXPECT_EQ(cache.Get("B"), 2);
+    EXPECT_EQ(cache.Get(2), 2);
   }
 
   for (size_t i = 0; i < SECOND_FREQ; ++i) {
-    EXPECT_EQ(cache.Get("C"), 3);
+    EXPECT_EQ(cache.Get(3), 3);
   }
 
   for (size_t i = 0; i < THIRD_FREQ; ++i) {
-    EXPECT_EQ(cache.Get("A"), 1);
+    EXPECT_EQ(cache.Get(1), 1);
   }
 
-  cache.Put("D", 4);
+  cache.Put(4, 4);
 
-  EXPECT_EQ(cache.Get("B"), 2);
-  EXPECT_EQ(cache.Get("C"), 3);
-  EXPECT_EQ(cache.Get("D"), 4);
-  EXPECT_THROW(cache.Get("A"), std::range_error);
+  EXPECT_EQ(cache.Get(2), 2);
+  EXPECT_EQ(cache.Get(3), 3);
+  EXPECT_EQ(cache.Get(4), 4);
+  EXPECT_THROW(cache.Get(1), std::range_error);
 }
 
 TEST(LFUCache, Single_Slot) {

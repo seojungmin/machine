@@ -18,18 +18,18 @@ using arc_cache_t = Cache<Key, Value, ARCCachePolicy<Key>>;
 
 TEST(ARCCache, SimplePut) {
   size_t cache_capacity = 1;
-  arc_cache_t<std::string, int> cache(cache_capacity);
+  arc_cache_t<int, int> cache(cache_capacity);
 
-  cache.Put("test", 666);
+  cache.Put(1, 666);
 
-  EXPECT_EQ(cache.Get("test"), 666);
+  EXPECT_EQ(cache.Get(1), 666);
 }
 
 TEST(ARCCache, MissingValue) {
   size_t cache_capacity = 1;
-  arc_cache_t<std::string, int> cache(cache_capacity);
+  arc_cache_t<int, int> cache(cache_capacity);
 
-  EXPECT_THROW(cache.Get("test"), std::range_error);
+  EXPECT_THROW(cache.Get(1), std::range_error);
 }
 
 TEST(ARCCache, KeepsAllValuesWithinCapacity) {

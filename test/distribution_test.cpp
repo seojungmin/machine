@@ -17,7 +17,7 @@ TEST(DistributionTest, RangeCheck) {
 
   for(sample_itr = 0; sample_itr < sample_count; sample_itr++){
     auto sample = zipf_generator.GetNextNumber();
-    printf("sample %lu : %lu\n", sample_itr, sample);
+    //printf("sample %lu : %lu\n", sample_itr, sample);
 
     // Check range
     EXPECT_TRUE(sample >= 1);

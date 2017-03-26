@@ -48,35 +48,35 @@ TEST(FIFOCache, Missing_Value) {
 
 TEST(FIFOCache, Sequence_Test) {
   constexpr int TEST_SIZE = 10;
-  fifo_cache_t<std::string, int> fc(TEST_SIZE);
+  fifo_cache_t<int, int> fc(TEST_SIZE);
 
   for (size_t i = 0; i < TEST_SIZE; ++i) {
-    fc.Put(std::to_string('0' + i), i);
+    fc.Put(i, i);
   }
 
   EXPECT_EQ(fc.CurrentCapacity(), TEST_SIZE);
 
   for (size_t i = 0; i < TEST_SIZE; ++i) {
-    EXPECT_EQ(fc.Get(std::to_string('0' + i)), i);
+    EXPECT_EQ(fc.Get(i), i);
   }
 
   // replace a half
   for (size_t i = 0; i < TEST_SIZE / 2; ++i) {
-    fc.Put(std::to_string('a' + i), i);
+    fc.Put(i + TEST_SIZE, i);
   }
 
   EXPECT_EQ(fc.CurrentCapacity(), TEST_SIZE);
 
   for (size_t i = 0; i < TEST_SIZE / 2; ++i) {
-    EXPECT_THROW(fc.Get(std::to_string('0' + i)), std::range_error);
+    EXPECT_THROW(fc.Get(i), std::range_error);
   }
 
   for (size_t i = 0; i < TEST_SIZE / 2; ++i) {
-    EXPECT_EQ(fc.Get(std::to_string('a' + i)), i);
+    EXPECT_EQ(fc.Get(i + TEST_SIZE), i);
   }
 
   for (size_t i = TEST_SIZE / 2; i < TEST_SIZE; ++i) {
-    EXPECT_EQ(fc.Get(std::to_string('0' + i)), i);
+    EXPECT_EQ(fc.Get(i), i);
   }
 }
 

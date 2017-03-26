@@ -2,9 +2,26 @@
 
 #pragma once
 
+#include <mutex>
+
 #include "policy.h"
 
+#include "policy_arc.h"
+#include "policy_fifo.h"
+#include "policy_lfu.h"
+#include "policy_lru.h"
+
 namespace machine {
+
+enum CachingType {
+  CACHING_TYPE_INVALID = 0,
+
+  CACHING_TYPE_FIFO = 1,
+  CACHING_TYPE_LRU = 2,
+  CACHING_TYPE_LFU = 3,
+  CACHING_TYPE_ARC = 4
+
+};
 
 // Base class for all caching algorithms
 template <typename Key, typename Value, typename Policy>
@@ -18,7 +35,7 @@ class Cache {
 
   Cache(size_t capacity);
 
-  void Put(const Key& key, const Value& value);
+  Key Put(const Key& key, const Value& value);
 
   const Value& Get(const Key& key) const;
 
@@ -44,5 +61,33 @@ class Cache {
   size_t capacity_;
 
 };
+
+class StorageCache {
+
+ public:
+
+  StorageCache(CachingType caching_type,
+               size_t capacity);
+
+  int Put(const int& key, const int& value);
+
+  const int& Get(const int& key) const;
+
+  size_t CurrentCapacity() const;
+
+ private:
+
+  CachingType caching_type_;
+
+  Cache<int, int, FIFOCachePolicy<int>>* fifo_cache = nullptr;
+
+  Cache<int, int, LRUCachePolicy<int>>* lru_cache = nullptr;
+
+  Cache<int, int, LFUCachePolicy<int>>* lfu_cache = nullptr;
+
+  Cache<int, int, ARCCachePolicy<int>>* arc_cache = nullptr;
+
+};
+
 
 }  // End machine namespace

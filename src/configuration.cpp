@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <iomanip>
+#include <mutex>
 
 #include "configuration.h"
 
@@ -38,8 +39,6 @@ std::string DeviceTypeToString(const DeviceType& device_type){
       return "NVM";
     case DEVICE_TYPE_SSD:
       return "SSD";
-    case DEVICE_TYPE_HDD:
-      return "HDD";
     default:
       return "INVALID";
   }
@@ -53,14 +52,14 @@ static void ValidateHierarchyType(const configuration &state) {
   }
   else {
     switch (state.hierarchy_type) {
+      case HIERARCHY_TYPE_NVM:
+        printf("%30s : %s\n", "hierarchy_type", "HIERARCHY_TYPE_NVM");
+        break;
       case HIERARCHY_TYPE_DRAM_NVM:
         printf("%30s : %s\n", "hierarchy_type", "HIERARCHY_TYPE_DRAM_NVM");
         break;
       case HIERARCHY_TYPE_DRAM_NVM_SSD:
         printf("%30s : %s\n", "hierarchy_type", "HIERARCHY_TYPE_DRAM_NVM_SSD");
-        break;
-      case HIERARCHY_TYPE_DRAM_NVM_SSD_HDD:
-        printf("%30s : %s\n", "hierarchy_type", "HIERARCHY_TYPE_DRAM_NVM_SSD_HDD");
         break;
       default:
         break;
@@ -137,38 +136,36 @@ static void ValidateDirectNVM(const configuration &state) {
 
 static void ConstructDeviceList(configuration &state){
 
-  Device dram_device(DEVICE_TYPE_DRAM,
+  Device dram_device(state.caching_type,
+                     DEVICE_TYPE_DRAM,
                      dram_device_size,
                      read_dram_latency,
                      write_dram_latency
   );
-  Device nvm_device(DEVICE_TYPE_NVM,
+  Device nvm_device(state.caching_type,
+                    DEVICE_TYPE_NVM,
                     nvm_device_size,
                     read_nvm_latency,
                     write_nvm_latency
   );
-  Device ssd_device(DEVICE_TYPE_SSD,
+  Device ssd_device(state.caching_type,
+                    DEVICE_TYPE_SSD,
                     ssd_device_size,
                     read_ssd_latency,
                     write_ssd_latency
   );
-  Device hdd_device(DEVICE_TYPE_HDD,
-                    hdd_device_size,
-                    read_hdd_latency,
-                    write_hdd_latency
-  );
 
   switch (state.hierarchy_type) {
+    case HIERARCHY_TYPE_NVM: {
+         state.devices = {nvm_device};
+       }
+    break;
     case HIERARCHY_TYPE_DRAM_NVM: {
       state.devices = {dram_device, nvm_device};
     }
     break;
     case HIERARCHY_TYPE_DRAM_NVM_SSD: {
       state.devices = {dram_device, nvm_device, ssd_device};
-    }
-    break;
-    case HIERARCHY_TYPE_DRAM_NVM_SSD_HDD: {
-      state.devices = {dram_device, nvm_device, ssd_device, hdd_device};
     }
     break;
     default:
@@ -182,9 +179,10 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
   // Default Values
   state.verbose = false;
 
-  state.hierarchy_type = HIERARCHY_TYPE_DRAM_NVM_SSD_HDD;
+  state.hierarchy_type = HIERARCHY_TYPE_DRAM_NVM_SSD;
   state.logging_type = LOGGING_TYPE_WBL;
   state.migration_type = MIGRATION_TYPE_DOWNWARDS;
+  state.caching_type = CACHING_TYPE_FIFO;
 
   // Parse args
   while (1) {
