@@ -13,6 +13,8 @@
 
 namespace machine {
 
+#define INVALID_KEY -1
+
 enum CachingType {
   CACHING_TYPE_INVALID = 0,
 
@@ -22,6 +24,19 @@ enum CachingType {
   CACHING_TYPE_ARC = 4
 
 };
+
+enum DeviceType {
+  DEVICE_TYPE_INVALID = 0,
+
+  DEVICE_TYPE_DRAM = 1,
+  DEVICE_TYPE_NVM = 2,
+  DEVICE_TYPE_SSD = 3
+
+};
+
+std::string CachingTypeToString(const CachingType& caching_type);
+
+std::string DeviceTypeToString(const DeviceType& device_type);
 
 // Base class for all caching algorithms
 template <typename Key, typename Value, typename Policy>
@@ -40,6 +55,8 @@ class Cache {
   const Value& Get(const Key& key) const;
 
   size_t CurrentCapacity() const;
+
+  void Print();
 
  protected:
 
@@ -66,7 +83,8 @@ class StorageCache {
 
  public:
 
-  StorageCache(CachingType caching_type,
+  StorageCache(DeviceType device_type,
+               CachingType caching_type,
                size_t capacity);
 
   int Put(const int& key, const int& value);
@@ -75,9 +93,12 @@ class StorageCache {
 
   size_t CurrentCapacity() const;
 
- private:
+  friend std::ostream& operator<< (std::ostream& stream,
+                                   const StorageCache& cache);
 
-  CachingType caching_type_;
+  DeviceType device_type_ = DeviceType::DEVICE_TYPE_INVALID;
+
+  CachingType caching_type_ = CachingType::CACHING_TYPE_INVALID;
 
   Cache<int, int, FIFOCachePolicy<int>>* fifo_cache = nullptr;
 

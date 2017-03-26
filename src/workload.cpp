@@ -21,12 +21,6 @@ size_t query_itr;
 
 double total_duration = 0;
 
-// Memory block map
-std::map<size_t, DeviceType> memory_block_map;
-
-// Storage block map
-std::map<size_t, DeviceType> storage_block_map;
-
 size_t dram_device_size = 5;
 size_t nvm_device_size = 10;
 size_t ssd_device_size = 20;
@@ -59,62 +53,99 @@ UNUSED_ATTRIBUTE static void WriteOutput(double duration) {
 
 void BootstrapMachine(const size_t& total_slots) {
 
-  for(size_t slot_itr = 0; slot_itr < total_slots; slot_itr++){
-    auto last_device = state.devices.back();
-    auto last_device_type = last_device.device_type;
-    auto last_device_string = DeviceTypeToString(last_device_type);
+  auto last_device = state.devices.back();
+  //std::cout << "Bootstrap device: " << DeviceTypeToString(last_device_type) << "\n";
 
-    storage_block_map[slot_itr] = last_device_type;
+  for(size_t slot_itr = 0; slot_itr < total_slots; slot_itr++){
+    last_device.cache.Put(slot_itr, slot_itr);
   }
+
+  std::cout << last_device.cache;
 
 }
 
 DeviceType LocateMemoryDevice(const size_t& block_id){
-  DeviceType device_type = DeviceType::DEVICE_TYPE_INVALID;
 
-  if(memory_block_map.count(block_id) != 0){
-    // Found
-    device_type = memory_block_map[block_id];
+  for(auto device : state.devices){
 
-    // Check device type
+    DeviceType device_type = device.device_type;
     if(device_type != DeviceType::DEVICE_TYPE_DRAM &&
         device_type != DeviceType::DEVICE_TYPE_NVM){
-      std::cout << "Invalid memory device";
-      exit(EXIT_FAILURE);
+      continue;
     }
+
+    std::cout << "Check memory device: " << DeviceTypeToString(device_type) << "\n";
+    std::cout << device.cache;
+
+    // Check cache
+    try{
+      auto location = device.cache.Get(block_id);
+      std::cout << "Found at location: " << location;
+      std::cout << " in " << DeviceTypeToString(device_type) << "\n";
+      return device_type;
+    }
+    catch(const std::range_error& not_found){
+      // Nothing to do here!
+    }
+
   }
 
-  return device_type;
+  return DeviceType::DEVICE_TYPE_INVALID;
 }
 
 DeviceType LocateStorageDevice(const size_t& block_id){
-  DeviceType device_type = DeviceType::DEVICE_TYPE_INVALID;
 
-  if(storage_block_map.count(block_id) != 0){
-    // Found
-    device_type = storage_block_map[block_id];
+  for(auto device : state.devices){
 
-    // Check device type
+    DeviceType device_type = device.device_type;
     if(device_type != DeviceType::DEVICE_TYPE_SSD){
-      std::cout << "Invalid storage device";
-      exit(EXIT_FAILURE);
+      continue;
+    }
+
+    std::cout << "Check storage device: " << DeviceTypeToString(device_type) << "\n";
+    std::cout << device.cache;
+
+    // Check cache
+    try{
+      auto location = device.cache.Get(block_id);
+      std::cout << "Found at location: " << location;
+      std::cout << " in " << DeviceTypeToString(device_type) << "\n";
+      return device_type;
+    }
+    catch(const std::range_error& not_found){
+      // Nothing to do here!
     }
 
   }
 
-  return device_type;
+  return DeviceType::DEVICE_TYPE_INVALID;
 }
 
-void CopyToDRAM(const size_t& block_id){
+void CopyToDRAM(DeviceType device_type,
+                const size_t& block_id){
 
-  auto storage_device_type = LocateStorageDevice(block_id);
+  UNUSED_ATTRIBUTE size_t victim_block;
 
   // Copy to DRAM
-  memory_block_map[block_id] = DeviceType::DEVICE_TYPE_DRAM;
+  for(auto device : state.devices){
 
-  if(storage_device_type == DeviceType::DEVICE_TYPE_SSD){
+    DeviceType device_type = device.device_type;
+    if(device_type == DeviceType::DEVICE_TYPE_DRAM){
+      victim_block = device.cache.Put(block_id, 0);
+      total_duration += write_dram_latency;
+    }
+
+  }
+
+  if(device_type == DeviceType::DEVICE_TYPE_SSD){
     total_duration += read_ssd_latency;
   }
+
+  if(device_type == DeviceType::DEVICE_TYPE_NVM){
+    total_duration += read_nvm_latency;
+  }
+
+  // Move victim if needed
 
 }
 
@@ -129,7 +160,7 @@ void ReadBlock(const size_t& block_id){
 
   // Not found on DRAM & NVM
   if(memory_device_type == DeviceType::DEVICE_TYPE_INVALID){
-    CopyToDRAM(block_id);
+    CopyToDRAM(storage_device_type, block_id);
   }
 
   memory_device_type = LocateMemoryDevice(block_id);
@@ -155,15 +186,9 @@ void MachineHelper() {
 
   // Run workload
 
-  // Determine size of hierarchy
-  size_t total_slots = 0;
-  for(auto device : state.devices){
-    auto device_type = device.device_type;
-    if(device_type != DeviceType::DEVICE_TYPE_DRAM){
-      total_slots += device.device_size;
-    }
-  }
-
+  // Determine size of last device
+  auto last_device = state.devices.back();
+  size_t total_slots = last_device.device_size;
   std::cout << "Total slots : " << total_slots << "\n";
 
   // Reinit duration

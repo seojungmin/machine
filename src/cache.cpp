@@ -12,8 +12,6 @@
 
 namespace machine {
 
-#define INVALID_KEY -1
-
 #define CACHE_TEMPLATE_ARGUMENT \
     template <typename Key, typename Value, typename Policy>
 
@@ -71,7 +69,6 @@ const Value& CACHE_TEMPLATE_TYPE::Get(const Key& key) const {
   cache_policy_.Touch(key);
 
   return elem_it->second;
-
 }
 
 CACHE_TEMPLATE_ARGUMENT
@@ -117,6 +114,17 @@ CACHE_TEMPLATE_TYPE::LocateEntry(const Key& key) const {
 
 }
 
+CACHE_TEMPLATE_ARGUMENT
+void CACHE_TEMPLATE_TYPE::Print(){
+
+  for(auto& cache_item : cache_items_map){
+    std::cout << cache_item.first << " ";
+  }
+
+  std::cout << "\n-------------------------------\n";
+
+}
+
 // Instantiations
 
 // LRU
@@ -135,9 +143,11 @@ template class Cache<int, std::string, FIFOCachePolicy<int>>;
 template class Cache<int, int, ARCCachePolicy<int>>;
 template class Cache<int, std::string, ARCCachePolicy<int>>;
 
-StorageCache::StorageCache(CachingType caching_type,
+StorageCache::StorageCache(DeviceType device_type,
+                           CachingType caching_type,
                            size_t capacity) :
-    caching_type_(caching_type){
+                               device_type_(device_type),
+                               caching_type_(caching_type){
 
   switch(caching_type_){
 
@@ -232,6 +242,72 @@ size_t StorageCache::CurrentCapacity() const{
   }
 
 }
+
+std::string CachingTypeToString(const CachingType& caching_type){
+
+  switch (caching_type){
+    case CACHING_TYPE_FIFO:
+      return "FIFO";
+    case CACHING_TYPE_LRU:
+      return "LRU";
+    case CACHING_TYPE_LFU:
+      return "LFU";
+    case CACHING_TYPE_ARC:
+      return "ARC";
+    default:
+      return "INVALID";
+  }
+
+}
+
+std::string DeviceTypeToString(const DeviceType& device_type){
+
+  switch (device_type){
+    case DEVICE_TYPE_DRAM:
+      return "DRAM";
+    case DEVICE_TYPE_NVM:
+      return "NVM";
+    case DEVICE_TYPE_SSD:
+      return "SSD";
+    default:
+      return "INVALID";
+  }
+
+}
+
+std::ostream& operator<< (std::ostream& stream,
+                          const StorageCache& cache){
+
+  std::cout << "-------------------------------\n";
+  std::cout << "CACHE CONTENTS: ";
+  std::cout << DeviceTypeToString(cache.device_type_) << " ";
+  std::cout << CachingTypeToString(cache.caching_type_) << "\n";
+
+  switch(cache.caching_type_){
+
+     case CACHING_TYPE_FIFO:
+       cache.fifo_cache->Print();
+       return stream;
+
+     case CACHING_TYPE_LRU:
+       cache.lru_cache->Print();
+       return stream;
+
+     case CACHING_TYPE_LFU:
+       cache.lfu_cache->Print();
+       return stream;
+
+     case CACHING_TYPE_ARC:
+       cache.arc_cache->Print();
+       return stream;
+
+     case CACHING_TYPE_INVALID:
+     default:
+       exit(EXIT_FAILURE);
+   }
+
+}
+
 
 
 }  // End machine namespace

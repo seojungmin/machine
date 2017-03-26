@@ -21,15 +21,6 @@ enum HierarchyType {
 
 };
 
-enum DeviceType {
-  DEVICE_TYPE_INVALID = 0,
-
-  DEVICE_TYPE_DRAM = 1,
-  DEVICE_TYPE_NVM = 2,
-  DEVICE_TYPE_SSD = 3
-
-};
-
 struct Device {
 
   Device(const CachingType& caching_type,
@@ -41,7 +32,7 @@ struct Device {
     device_size(device_size),
     read_latency(read_latency),
     write_latency(write_latency),
-    cache(caching_type, device_size){
+    cache(device_type, caching_type, device_size){
     // Nothing to do here!
   }
 
