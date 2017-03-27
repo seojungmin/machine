@@ -162,7 +162,7 @@ void MoveVictim(DeviceType source,
 
         case DEVICE_TYPE_SSD:
           destination = DEVICE_TYPE_HDD;
-          return;
+          break;
 
         default:
         case DEVICE_TYPE_INVALID:
@@ -251,8 +251,8 @@ void MachineHelper() {
   PrintMachine();
 
   size_t upper_bound = total_slots - 1;
-  double theta = 1.5;
-  size_t sample_count = 10000/scale_factor;
+  double theta = 0.5;
+  size_t sample_count = 1000;
   size_t sample_itr;
   double seed = 23;
   srand(seed);

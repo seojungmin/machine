@@ -5,8 +5,8 @@
 namespace machine {
 
 size_t dram_device_size = 50/scale_factor;
-size_t nvm_device_size = 200/scale_factor;
-size_t ssd_device_size = 1000/scale_factor;
+size_t nvm_device_size = 100/scale_factor;
+size_t ssd_device_size = 200/scale_factor;
 size_t hdd_device_size = 5000/scale_factor;
 
 size_t dram_read_latency = 10;

@@ -108,9 +108,8 @@ std::ostream& operator<< (std::ostream& stream,
                           const StorageCache& cache){
 
   std::cout << "-------------------------------\n";
-  std::cout << "CACHE CONTENTS: ";
-  std::cout << DeviceTypeToString(cache.device_type_) << " ";
-  std::cout << CachingTypeToString(cache.caching_type_) << "\n";
+  std::cout << "[" << DeviceTypeToString(cache.device_type_) << "] ";
+  std::cout << "[" << CachingTypeToString(cache.caching_type_) <<"] ";
 
   switch(cache.caching_type_){
 

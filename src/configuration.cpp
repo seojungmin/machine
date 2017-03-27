@@ -20,7 +20,7 @@ void Usage() {
       "   -l --logging_type                   :  logging type\n"
       "   -m --migration_type                 :  migration type\n"
       "   -n --direct_nvm                     :  direct nvm\n"
-      "   -s --machine_size                   :  machine size"
+      "   -s --machine_size                   :  machine size\n"
       "   -v --verbose                        :  verbose\n";
 
   exit(EXIT_FAILURE);

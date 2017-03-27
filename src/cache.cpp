@@ -117,6 +117,8 @@ CACHE_TEMPLATE_TYPE::LocateEntry(const Key& key) const {
 CACHE_TEMPLATE_ARGUMENT
 void CACHE_TEMPLATE_TYPE::Print(){
 
+  std::cout << "SIZE: " << cache_items_map.size() << "\n";
+
   for(auto& cache_item : cache_items_map){
     std::cout << cache_item.first << " ";
   }
