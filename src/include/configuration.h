@@ -100,6 +100,9 @@ class configuration {
   // caching type
   CachingType caching_type;
 
+  // upwards migration frequency
+  size_t migration_frequency;
+
   // Verbose output
   bool verbose;
 

@@ -13,6 +13,7 @@ void Usage() {
       "\n"
       "Command line options : machine <options>\n"
       "   -a --hierarchy_type                 :  hierarchy type\n"
+      "   -f --migration_frequency            :  migration frequency\n"
       "   -l --logging_type                   :  logging type\n"
       "   -m --migration_type                 :  migration type\n"
       "   -n --direct_nvm                     :  direct nvm\n"
@@ -23,6 +24,7 @@ void Usage() {
 
 static struct option opts[] = {
     {"hierarchy_type", optional_argument, NULL, 'a'},
+    {"migration_frequency", optional_argument, NULL, 'f'},
     {"logging_type", optional_argument, NULL, 'l'},
     {"migration_type", optional_argument, NULL, 'm'},
     {"direct_nvm", optional_argument, NULL, 'n'},
@@ -88,6 +90,10 @@ static void ValidateMigrationType(const configuration &state) {
         break;
     }
   }
+}
+
+static void ValidateMigrationFrequency(const configuration &state){
+  printf("%30s : %lu\n", "migration_frequency", state.migration_frequency);
 }
 
 static void ValidateCachingType(const configuration &state) {
@@ -174,12 +180,13 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
   state.logging_type = LOGGING_TYPE_WBL;
   state.migration_type = MIGRATION_TYPE_DOWNWARDS;
   state.caching_type = CACHING_TYPE_FIFO;
+  state.migration_frequency = 10;
 
   // Parse args
   while (1) {
     int idx = 0;
     int c = getopt_long(argc, argv,
-                        "a:l:m:n:v",
+                        "a:f:l:m:n:vh",
                         opts, &idx);
 
     if (c == -1) break;
@@ -194,11 +201,17 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
       case 'm':
         state.migration_type = (MigrationType)atoi(optarg);
         break;
+      case 'f':
+        state.migration_frequency = atoi(optarg);
+        break;
       case 'n':
         state.direct_nvm = atoi(optarg);
         break;
       case 'v':
         state.verbose = atoi(optarg);
+        break;
+      case 'h':
+        Usage();
         break;
 
       default:
@@ -217,6 +230,7 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
   ValidateMigrationType(state);
   ValidateCachingType(state);
   ValidateDirectNVM(state);
+  ValidateMigrationFrequency(state);
 
 
   printf("//===----------------------------------------------------------------------===//\n");

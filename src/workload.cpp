@@ -21,9 +21,11 @@ size_t query_itr;
 
 double total_duration = 0;
 
-size_t dram_device_size = 50;
-size_t nvm_device_size = 200;
-size_t ssd_device_size = 1000;
+size_t scale_factor = 10;
+
+size_t dram_device_size = 50/scale_factor;
+size_t nvm_device_size = 200/scale_factor;
+size_t ssd_device_size = 1000/scale_factor;
 
 size_t read_dram_latency = 10;
 size_t read_nvm_latency = 20;
@@ -247,8 +249,9 @@ void ReadBlock(const size_t& block_id){
     total_duration += read_nvm_latency;
 
     // Migrate bothways?
-    if(state.migration_type == MigrationType::MIGRATION_TYPE_BOTHWAYS){
-      if(rand() % 10 == 0){
+    if(state.hierarchy_type == HierarchyType::HIERARCHY_TYPE_DRAM_NVM ||
+        state.migration_type == MigrationType::MIGRATION_TYPE_BOTHWAYS){
+      if(rand() % state.migration_frequency == 0){
         std::cout << "Migrate upwards : " << block_id << "\n";
         Copy(DeviceType::DEVICE_TYPE_DRAM,
              DeviceType::DEVICE_TYPE_NVM,
@@ -285,7 +288,7 @@ void MachineHelper() {
 
   size_t upper_bound = total_slots - 1;
   double theta = 1.5;
-  size_t sample_count = 10000;
+  size_t sample_count = 10000/(scale_factor * scale_factor);
   size_t sample_itr;
   double seed = 23;
   srand(seed);
