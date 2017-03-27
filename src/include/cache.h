@@ -13,7 +13,7 @@
 
 namespace machine {
 
-#define INVALID_KEY -1
+#define INVALID_KEY INT32_MAX
 
 enum CachingType {
   CACHING_TYPE_INVALID = 0,

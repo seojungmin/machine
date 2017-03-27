@@ -159,20 +159,66 @@ size_t GetReadLatency(DeviceType device_type){
   }
 }
 
+void MoveVictim(DeviceType source,
+                const size_t& block_id);
+
 void Copy(DeviceType destination_device_type,
           DeviceType source_device_type,
           const size_t& block_id){
-  UNUSED_ATTRIBUTE size_t victim_block;
+
+  if(destination_device_type ==
+      DeviceType::DEVICE_TYPE_INVALID){
+    return;
+  }
 
   // Write to destination device
   auto device_offset = GetDeviceOffset(destination_device_type);
   auto device_cache = state.devices[device_offset].cache;
-  victim_block = device_cache.Put(block_id, CLEAN_BLOCK);
+  auto victim_block_id = device_cache.Put(block_id, CLEAN_BLOCK);
 
   total_duration += GetWriteLatency(destination_device_type);
   total_duration += GetReadLatency(source_device_type);
 
-  // TODO: Move victim
+  // Move victim
+  MoveVictim(destination_device_type,
+             victim_block_id);
+
+}
+
+void MoveVictim(DeviceType source,
+                const size_t& block_id){
+
+  // Check if we have a victim
+  if(block_id != INVALID_KEY){
+
+    DeviceType destination = DeviceType::DEVICE_TYPE_INVALID;
+
+    std::cout << "Move victim : " << block_id << " ";
+    std::cout << "Source : " << DeviceTypeToString(source) << "\n";
+
+    switch(source){
+        case DEVICE_TYPE_DRAM:
+          destination = DEVICE_TYPE_NVM;
+          break;
+
+        case DEVICE_TYPE_NVM:
+          destination = DEVICE_TYPE_SSD;
+          break;
+
+        case DEVICE_TYPE_SSD:
+          return;
+
+        default:
+        case DEVICE_TYPE_INVALID:
+          exit(EXIT_FAILURE);
+      }
+
+    // Copy to device
+    Copy(destination, source, block_id);
+
+    // Print
+    PrintMachine();
+  }
 
 }
 
@@ -228,7 +274,7 @@ void MachineHelper() {
 
   size_t upper_bound = total_slots - 1;
   double theta = 1.5;
-  size_t sample_count = 10;
+  size_t sample_count = 1000;
   size_t sample_itr;
   double seed = 23;
   srand(seed);
