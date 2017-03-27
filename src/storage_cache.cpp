@@ -35,7 +35,7 @@ StorageCache::StorageCache(DeviceType device_type,
 
 }
 
-int StorageCache::Put(const int& key, const int& value){
+Block StorageCache::Put(const int& key, const int& value){
 
   switch(caching_type_){
 

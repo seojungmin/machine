@@ -15,7 +15,7 @@ class StorageCache {
                CachingType caching_type,
                size_t capacity);
 
-  int Put(const int& key, const int& value);
+  Block Put(const int& key, const int& value);
 
   const int& Get(const int& key) const;
 

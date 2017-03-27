@@ -15,6 +15,11 @@ namespace machine {
 
 #define INVALID_KEY INT32_MAX
 
+struct Block{
+  size_t block_id;
+  size_t block_type;
+};
+
 // Base class for all caching algorithms
 template <typename Key, typename Value, typename Policy>
 class Cache {
@@ -27,9 +32,10 @@ class Cache {
 
   Cache(size_t capacity);
 
-  Key Put(const Key& key, const Value& value);
+  // Returns victim block
+  Block Put(const Key& key, const Value& value);
 
-  const Value& Get(const Key& key) const;
+  const Value& Get(const Key& key, bool touch = true) const;
 
   size_t CurrentCapacity() const;
 

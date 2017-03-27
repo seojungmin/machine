@@ -99,12 +99,12 @@ TEST(LFUCache, FrequencyIssue) {
 
 TEST(LFUCache, CheckVictim) {
   size_t cache_capacity = 3;
-  lfu_cache_t<int, std::string> cache(cache_capacity);
+  lfu_cache_t<int, int> cache(cache_capacity);
 
-  cache.Put(1,"data1");
-  cache.Put(2,"data2");
-  cache.Put(3,"data3");
-  cache.Put(4,"data4");
+  cache.Put(1, 1);
+  cache.Put(2, 2);
+  cache.Put(3, 3);
+  cache.Put(4, 4);
 
   EXPECT_EQ(cache.CurrentCapacity(), 3);
 

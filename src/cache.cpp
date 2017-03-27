@@ -28,18 +28,21 @@ CACHE_TEMPLATE_TYPE::Cache(size_t capacity)
 }
 
 CACHE_TEMPLATE_ARGUMENT
-Key CACHE_TEMPLATE_TYPE::Put(const Key& key,
-                             const Value& value) {
+Block CACHE_TEMPLATE_TYPE::Put(const Key& key,
+                               const Value& value) {
 
   operation_guard{cache_mutex_};
   auto entry_location = LocateEntry(key);
+  Block victim;
   Key victim_key = INVALID_KEY;
+  Value victim_value = INVALID_KEY;
 
   if (entry_location == cache_items_map.end()) {
 
     // add new element to the cache
     if (CurrentCapacity() + 1 > capacity_) {
       victim_key = cache_policy_.Victim();
+      victim_value = Get(victim_key, false);
       Erase(victim_key);
     }
 
@@ -53,11 +56,15 @@ Key CACHE_TEMPLATE_TYPE::Put(const Key& key,
 
   }
 
-  return victim_key;
+  // return victim
+  victim.block_id = victim_key;
+  victim.block_type = victim_value;
+  return victim;
 }
 
 CACHE_TEMPLATE_ARGUMENT
-const Value& CACHE_TEMPLATE_TYPE::Get(const Key& key) const {
+const Value& CACHE_TEMPLATE_TYPE::Get(const Key& key,
+                                      bool touch) const {
 
   operation_guard{cache_mutex_};
   auto elem_it = LocateEntry(key);
@@ -66,7 +73,9 @@ const Value& CACHE_TEMPLATE_TYPE::Get(const Key& key) const {
     throw std::range_error{"No such element in the cache"};
   }
 
-  cache_policy_.Touch(key);
+  if(touch == true){
+    cache_policy_.Touch(key);
+  }
 
   return elem_it->second;
 }
@@ -131,19 +140,15 @@ void CACHE_TEMPLATE_TYPE::Print(){
 
 // LRU
 template class Cache<int, int, LRUCachePolicy<int>>;
-template class Cache<int, std::string, LRUCachePolicy<int>>;
 
 // LFU
 template class Cache<int, int, LFUCachePolicy<int>>;
-template class Cache<int, std::string, LFUCachePolicy<int>>;
 
 // FIFO
 template class Cache<int, int, FIFOCachePolicy<int>>;
-template class Cache<int, std::string, FIFOCachePolicy<int>>;
 
 // ARC
 template class Cache<int, int, ARCCachePolicy<int>>;
-template class Cache<int, std::string, ARCCachePolicy<int>>;
 
 }  // End machine namespace
 

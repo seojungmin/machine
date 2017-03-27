@@ -118,7 +118,22 @@ size_t GetDeviceOffset(DeviceType device_type){
 }
 
 void MoveVictim(DeviceType source,
-                const size_t& block_id);
+                const size_t& block_id,
+                const bool& is_clean);
+
+bool IsClean(const size_t& block_type){
+  if(block_type == CLEAN_BLOCK){
+    return true;
+  }
+  return false;
+}
+
+std::string PrintCleanStatus(bool is_clean){
+  if(is_clean == true){
+    return "CLEAN";
+  }
+  return "DIRTY";
+}
 
 void Copy(DeviceType destination_device_type,
           DeviceType source_device_type,
@@ -132,19 +147,23 @@ void Copy(DeviceType destination_device_type,
   // Write to destination device
   auto device_offset = GetDeviceOffset(destination_device_type);
   auto device_cache = state.devices[device_offset].cache;
-  auto victim_block_id = device_cache.Put(block_id, CLEAN_BLOCK);
+  auto victim = device_cache.Put(block_id, CLEAN_BLOCK);
 
   total_duration += GetWriteLatency(destination_device_type);
   total_duration += GetReadLatency(source_device_type);
 
   // Move victim
+  auto victim_key = victim.block_id;
+  auto victim_block_type = victim.block_type;
   MoveVictim(destination_device_type,
-             victim_block_id);
+             victim_key,
+             IsClean(victim_block_type));
 
 }
 
 void MoveVictim(DeviceType source,
-                const size_t& block_id){
+                const size_t& block_id,
+                const bool& is_clean){
 
   // Check if we have a victim
   if(block_id != INVALID_KEY){
@@ -170,6 +189,7 @@ void MoveVictim(DeviceType source,
       }
 
     std::cout << "Move victim : " << block_id << " ";
+    std::cout << PrintCleanStatus(is_clean) << " ";
     std::cout << "Source : " << DeviceTypeToString(source) << " ";
     std::cout << "Destination : " << DeviceTypeToString(destination) << "\n";
 
