@@ -50,21 +50,6 @@ class configuration {
 
 };
 
-extern size_t dram_device_size;
-extern size_t nvm_device_size;
-extern size_t ssd_device_size;
-extern size_t hdd_device_size;
-
-extern size_t dram_read_latency;
-extern size_t nvm_read_latency;
-extern size_t ssd_read_latency;
-extern size_t hdd_read_latency;
-
-extern size_t dram_write_latency;
-extern size_t nvm_write_latency;
-extern size_t ssd_write_latency;
-extern size_t hdd_write_latency;
-
 void Usage(FILE *out);
 
 void ParseArguments(int argc, char *argv[], configuration &state);

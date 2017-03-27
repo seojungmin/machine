@@ -25,21 +25,6 @@ double total_duration = 0;
 
 size_t scale_factor = 10;
 
-size_t dram_device_size = 50/scale_factor;
-size_t nvm_device_size = 200/scale_factor;
-size_t ssd_device_size = 1000/scale_factor;
-size_t hdd_device_size = 5000/scale_factor;
-
-size_t dram_read_latency = 10;
-size_t nvm_read_latency = 50;
-size_t ssd_read_latency = 100;
-size_t hdd_read_latency = 500;
-
-size_t dram_write_latency = 10;
-size_t nvm_write_latency = 50;
-size_t ssd_write_latency = 100;
-size_t hdd_write_latency = 500;
-
 const size_t CLEAN_BLOCK = 100;
 const size_t DIRTY_BLOCK = 101;
 
@@ -130,46 +115,6 @@ size_t GetDeviceOffset(DeviceType device_type){
   std::cout << "Did not find device of type : " <<
       DeviceTypeToString(device_type);
   exit(EXIT_FAILURE);
-}
-
-size_t GetWriteLatency(DeviceType device_type){
-  switch(device_type){
-    case DEVICE_TYPE_DRAM:
-      return dram_write_latency;
-
-    case DEVICE_TYPE_NVM:
-      return nvm_write_latency;
-
-    case DEVICE_TYPE_SSD:
-      return ssd_write_latency;
-
-    case DEVICE_TYPE_HDD:
-      return hdd_write_latency;
-
-    default:
-    case DEVICE_TYPE_INVALID:
-      exit(EXIT_FAILURE);
-  }
-}
-
-size_t GetReadLatency(DeviceType device_type){
-  switch(device_type){
-    case DEVICE_TYPE_DRAM:
-      return dram_read_latency;
-
-    case DEVICE_TYPE_NVM:
-      return nvm_read_latency;
-
-    case DEVICE_TYPE_SSD:
-      return ssd_read_latency;
-
-    case DEVICE_TYPE_HDD:
-      return hdd_read_latency;
-
-    default:
-    case DEVICE_TYPE_INVALID:
-      exit(EXIT_FAILURE);
-  }
 }
 
 void MoveVictim(DeviceType source,

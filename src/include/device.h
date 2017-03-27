@@ -6,11 +6,17 @@
 
 namespace machine {
 
+extern size_t scale_factor;
+
+size_t GetWriteLatency(DeviceType device_type);
+
+size_t GetReadLatency(DeviceType device_type);
+
 struct Device {
 
 
-  Device(const CachingType& caching_type,
-         const DeviceType& device_type,
+  Device(const DeviceType& device_type,
+         const CachingType& caching_type,
          const size_t& device_size,
          const size_t& read_latency,
          const size_t& write_latency)
@@ -36,6 +42,16 @@ struct Device {
 
   // storage cache
   StorageCache cache;
+
+};
+
+class DeviceFactory {
+ public:
+  DeviceFactory();
+  virtual ~DeviceFactory();
+
+  static Device GetDevice(const DeviceType& device_type,
+                          const CachingType& caching_type);
 
 };
 

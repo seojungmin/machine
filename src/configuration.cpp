@@ -90,30 +90,14 @@ static void ValidateDirectNVM(const configuration &state) {
 
 static void ConstructDeviceList(configuration &state){
 
-  Device dram_device(state.caching_type,
-                     DEVICE_TYPE_DRAM,
-                     dram_device_size,
-                     dram_read_latency,
-                     dram_write_latency
-  );
-  Device nvm_device(state.caching_type,
-                    DEVICE_TYPE_NVM,
-                    nvm_device_size,
-                    nvm_read_latency,
-                    nvm_write_latency
-  );
-  Device ssd_device(state.caching_type,
-                    DEVICE_TYPE_SSD,
-                    ssd_device_size,
-                    ssd_read_latency,
-                    ssd_write_latency
-  );
-  Device hdd_device(state.caching_type,
-                    DEVICE_TYPE_HDD,
-                    hdd_device_size,
-                    hdd_read_latency,
-                    hdd_write_latency
-  );
+  Device dram_device = DeviceFactory::GetDevice(DEVICE_TYPE_DRAM,
+                                                state.caching_type);
+  Device nvm_device = DeviceFactory::GetDevice(DEVICE_TYPE_NVM,
+                                                state.caching_type);
+  Device ssd_device = DeviceFactory::GetDevice(DEVICE_TYPE_SSD,
+                                                state.caching_type);
+  Device hdd_device = DeviceFactory::GetDevice(DEVICE_TYPE_HDD,
+                                                state.caching_type);
 
   switch (state.hierarchy_type) {
     case HIERARCHY_TYPE_NVM: {
