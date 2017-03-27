@@ -8,68 +8,10 @@
 #include <string>
 #include <vector>
 
-#include "cache.h"
+#include "types.h"
+#include "device.h"
 
 namespace machine {
-
-enum HierarchyType {
-  HIERARCHY_TYPE_INVALID = 0,
-
-  HIERARCHY_TYPE_NVM = 1,
-  HIERARCHY_TYPE_DRAM_NVM = 2,
-  HIERARCHY_TYPE_DRAM_NVM_SSD = 3
-
-};
-
-struct Device {
-
-  Device(const CachingType& caching_type,
-         const DeviceType& device_type,
-         const size_t& device_size,
-         const size_t& read_latency,
-         const size_t& write_latency)
-  : device_type(device_type),
-    device_size(device_size),
-    read_latency(read_latency),
-    write_latency(write_latency),
-    cache(device_type, caching_type, device_size){
-    // Nothing to do here!
-  }
-
-  // type of the device
-  DeviceType device_type = DEVICE_TYPE_INVALID;
-
-  // size of the device (in pages)
-  size_t device_size = 0;
-
-  // read latency
-  size_t read_latency = 0;
-
-  // write latency
-  size_t write_latency = 0;
-
-  // storage cache
-  StorageCache cache;
-
-};
-
-std::string DeviceTypeToString(const DeviceType& device_type);
-
-enum LoggingType {
-  LOGGING_TYPE_INVALID = 0,
-
-  LOGGING_TYPE_WAL = 1,
-  LOGGING_TYPE_WBL = 2
-
-};
-
-enum MigrationType {
-  MIGRATION_TYPE_INVALID = 0,
-
-  MIGRATION_TYPE_DOWNWARDS = 1,
-  MIGRATION_TYPE_BOTHWAYS = 2
-
-};
 
 static const int generator_seed = 50;
 

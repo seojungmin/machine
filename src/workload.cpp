@@ -11,6 +11,8 @@
 #include "workload.h"
 #include "distribution.h"
 #include "configuration.h"
+#include "device.h"
+#include "cache.h"
 
 namespace machine {
 

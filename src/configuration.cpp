@@ -5,6 +5,8 @@
 #include <mutex>
 
 #include "configuration.h"
+#include "cache.h"
+#include "device.h"
 
 namespace machine {
 
@@ -47,6 +49,9 @@ static void ValidateHierarchyType(const configuration &state) {
         break;
       case HIERARCHY_TYPE_DRAM_NVM_SSD:
         printf("%30s : %s\n", "hierarchy_type", "HIERARCHY_TYPE_DRAM_NVM_SSD");
+        break;
+      case HIERARCHY_TYPE_DRAM_NVM_SSD_HDD:
+        printf("%30s : %s\n", "hierarchy_type", "HIERARCHY_TYPE_DRAM_NVM_SSD_HDD");
         break;
       default:
         break;

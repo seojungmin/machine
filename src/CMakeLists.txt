@@ -3,7 +3,7 @@
 # --[ Machine library
 
 # Create our library
-add_library (machine_library cache.cpp configuration.cpp workload.cpp)
+add_library (machine_library cache.cpp configuration.cpp workload.cpp storage_cache.cpp types.cpp)
 
 # Make sure the compiler can find include files for our machine library
 # when other libraries or executables link to machine
