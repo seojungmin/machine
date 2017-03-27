@@ -199,8 +199,7 @@ void ReadBlock(const size_t& block_id){
   if(memory_device_type == DeviceType::DEVICE_TYPE_NVM){
 
     // Migrate bothways?
-    if(state.hierarchy_type == HierarchyType::HIERARCHY_TYPE_DRAM_NVM ||
-        state.migration_type == MigrationType::MIGRATION_TYPE_BOTHWAYS){
+    if(state.migration_type == MigrationType::MIGRATION_TYPE_BOTHWAYS){
       if(rand() % state.migration_frequency == 0){
         std::cout << "Migrate upwards : " << block_id << "\n";
         Copy(DeviceType::DEVICE_TYPE_DRAM,

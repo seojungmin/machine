@@ -22,7 +22,6 @@ void Usage() {
       "   -n --direct_nvm                     :  direct nvm\n"
       "   -s --machine_size                   :  machine size\n"
       "   -v --verbose                        :  verbose\n";
-
   exit(EXIT_FAILURE);
 }
 
@@ -118,26 +117,26 @@ static void ConstructDeviceList(configuration &state){
   switch (state.hierarchy_type) {
     case HIERARCHY_TYPE_NVM: {
          state.devices = {nvm_device};
-         state.memory_devices = {nvm_device};
-         state.storage_devices = {};
+         state.memory_devices = {};
+         state.storage_devices = {nvm_device};
     }
     break;
     case HIERARCHY_TYPE_DRAM_NVM: {
          state.devices = {dram_device, nvm_device};
-         state.memory_devices = {dram_device, nvm_device};
-         state.storage_devices = {};
+         state.memory_devices = {dram_device};
+         state.storage_devices = {nvm_device};
     }
     break;
     case HIERARCHY_TYPE_DRAM_NVM_SSD: {
          state.devices = {dram_device, nvm_device, ssd_device};
          state.memory_devices = {dram_device, nvm_device};
-         state.storage_devices = {ssd_device};
+         state.storage_devices = {nvm_device, ssd_device};
     }
     break;
     case HIERARCHY_TYPE_DRAM_NVM_SSD_HDD: {
          state.devices = {dram_device, nvm_device, ssd_device, hdd_device};
          state.memory_devices = {dram_device, nvm_device};
-         state.storage_devices = {ssd_device, hdd_device};
+         state.storage_devices = {nvm_device, ssd_device, hdd_device};
     }
     break;
     default:
