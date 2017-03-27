@@ -81,5 +81,23 @@ std::string MigrationTypeToString(const MigrationType& migration_type) {
 
 }
 
+DeviceType GetLastDevice(const HierarchyType& hierarchy_type){
+
+  switch (hierarchy_type) {
+     case HIERARCHY_TYPE_NVM:
+       return DeviceType::DEVICE_TYPE_NVM;
+     case HIERARCHY_TYPE_DRAM_NVM:
+       return DeviceType::DEVICE_TYPE_NVM;
+     case HIERARCHY_TYPE_DRAM_NVM_SSD:
+       return DeviceType::DEVICE_TYPE_SSD;
+     case HIERARCHY_TYPE_DRAM_NVM_SSD_HDD:
+       return DeviceType::DEVICE_TYPE_HDD;
+     default:
+       return DeviceType::DEVICE_TYPE_INVALID;
+   }
+
+}
+
+
 }  // End machine namespace
 

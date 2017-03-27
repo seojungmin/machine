@@ -216,6 +216,20 @@ void ReadBlock(const size_t& block_id){
 void WriteBlock(const size_t& block_id) {
   std::cout << "WRITE " << block_id << "\n";
 
+  auto memory_device_type = LocateInMemoryDevices(block_id);
+  auto storage_device_type = LocateInStorageDevices(block_id);
+
+  // Not found on DRAM & NVM
+  if(memory_device_type == DeviceType::DEVICE_TYPE_INVALID){
+    Copy(DeviceType::DEVICE_TYPE_DRAM,
+         storage_device_type,
+         block_id);
+  }
+
+  // Write to block on memory device
+  memory_device_type = LocateInMemoryDevices(block_id);
+  total_duration += GetWriteLatency(memory_device_type);
+
 }
 
 void MachineHelper() {

@@ -60,7 +60,9 @@ size_t GetReadLatency(DeviceType device_type){
 }
 
 Device DeviceFactory::GetDevice(const DeviceType& device_type,
-                                const CachingType& caching_type){
+                                const CachingType& caching_type,
+                                const size_t& machine_size,
+                                const DeviceType& last_device_type){
 
   switch (device_type){
     case DEVICE_TYPE_DRAM:
@@ -71,29 +73,47 @@ Device DeviceFactory::GetDevice(const DeviceType& device_type,
                     dram_write_latency
       );
 
-    case DEVICE_TYPE_NVM:
+    case DEVICE_TYPE_NVM: {
+      // Check for last device
+      auto device_size = nvm_device_size;
+      if(last_device_type == DEVICE_TYPE_NVM){
+        device_size = machine_size;
+      }
       return Device(DEVICE_TYPE_NVM,
                     caching_type,
-                    nvm_device_size,
+                    device_size,
                     nvm_read_latency,
                     nvm_write_latency
       );
+    }
 
-    case DEVICE_TYPE_SSD:
+    case DEVICE_TYPE_SSD:  {
+      // Check for last device
+      auto device_size = ssd_device_size;
+      if(last_device_type == DEVICE_TYPE_SSD){
+        device_size = machine_size;
+      }
       return Device(DEVICE_TYPE_SSD,
                     caching_type,
-                    ssd_device_size,
+                    device_size,
                     ssd_read_latency,
                     ssd_write_latency
       );
+    }
 
-    case DEVICE_TYPE_HDD:
+    case DEVICE_TYPE_HDD: {
+      // Check for last device
+      auto device_size = hdd_device_size;
+      if(last_device_type == DEVICE_TYPE_HDD){
+        device_size = machine_size;
+      }
       return Device(DEVICE_TYPE_HDD,
                     caching_type,
-                    hdd_device_size,
+                    device_size,
                     hdd_read_latency,
                     hdd_write_latency
       );
+    }
 
     default:
       exit(EXIT_FAILURE);

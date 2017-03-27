@@ -45,6 +45,9 @@ class configuration {
   // upwards migration frequency
   size_t migration_frequency;
 
+  // machine size
+  size_t machine_size;
+
   // Verbose output
   bool verbose;
 

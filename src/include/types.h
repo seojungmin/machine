@@ -52,6 +52,7 @@ enum MigrationType {
 
 };
 
+DeviceType GetLastDevice(const HierarchyType& hierarchy_type);
 
 std::string HierarchyTypeToString(const HierarchyType& hierarchy_type);
 
