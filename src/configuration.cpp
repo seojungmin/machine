@@ -35,7 +35,7 @@ static struct option opts[] = {
 };
 
 static void ValidateHierarchyType(const configuration &state) {
-  if (state.hierarchy_type < 1 || state.hierarchy_type > 3) {
+  if (state.hierarchy_type < 1 || state.hierarchy_type > 4) {
     printf("Invalid hierarchy_type :: %d\n", state.hierarchy_type);
     exit(EXIT_FAILURE);
   }
@@ -135,20 +135,26 @@ static void ConstructDeviceList(configuration &state){
   Device dram_device(state.caching_type,
                      DEVICE_TYPE_DRAM,
                      dram_device_size,
-                     read_dram_latency,
-                     write_dram_latency
+                     dram_read_latency,
+                     dram_write_latency
   );
   Device nvm_device(state.caching_type,
                     DEVICE_TYPE_NVM,
                     nvm_device_size,
-                    read_nvm_latency,
-                    write_nvm_latency
+                    nvm_read_latency,
+                    nvm_write_latency
   );
   Device ssd_device(state.caching_type,
                     DEVICE_TYPE_SSD,
                     ssd_device_size,
-                    read_ssd_latency,
-                    write_ssd_latency
+                    ssd_read_latency,
+                    ssd_write_latency
+  );
+  Device hdd_device(state.caching_type,
+                    DEVICE_TYPE_HDD,
+                    hdd_device_size,
+                    hdd_read_latency,
+                    hdd_write_latency
   );
 
   switch (state.hierarchy_type) {
@@ -170,6 +176,12 @@ static void ConstructDeviceList(configuration &state){
          state.storage_devices = {ssd_device};
     }
     break;
+    case HIERARCHY_TYPE_DRAM_NVM_SSD_HDD: {
+         state.devices = {dram_device, nvm_device, ssd_device, hdd_device};
+         state.memory_devices = {dram_device, nvm_device};
+         state.storage_devices = {ssd_device, hdd_device};
+    }
+    break;
     default:
       break;
   }
@@ -181,7 +193,7 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
   // Default Values
   state.verbose = false;
 
-  state.hierarchy_type = HIERARCHY_TYPE_DRAM_NVM_SSD;
+  state.hierarchy_type = HIERARCHY_TYPE_DRAM_NVM_SSD_HDD;
   state.logging_type = LOGGING_TYPE_WBL;
   state.migration_type = MIGRATION_TYPE_DOWNWARDS;
   state.caching_type = CACHING_TYPE_FIFO;

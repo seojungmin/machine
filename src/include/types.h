@@ -31,7 +31,8 @@ enum DeviceType {
 
   DEVICE_TYPE_DRAM = 1,
   DEVICE_TYPE_NVM = 2,
-  DEVICE_TYPE_SSD = 3
+  DEVICE_TYPE_SSD = 3,
+  DEVICE_TYPE_HDD = 4
 
 };
 

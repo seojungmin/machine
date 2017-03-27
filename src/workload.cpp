@@ -28,14 +28,17 @@ size_t scale_factor = 10;
 size_t dram_device_size = 50/scale_factor;
 size_t nvm_device_size = 200/scale_factor;
 size_t ssd_device_size = 1000/scale_factor;
+size_t hdd_device_size = 5000/scale_factor;
 
-size_t read_dram_latency = 10;
-size_t read_nvm_latency = 20;
-size_t read_ssd_latency = 100;
+size_t dram_read_latency = 10;
+size_t nvm_read_latency = 50;
+size_t ssd_read_latency = 100;
+size_t hdd_read_latency = 500;
 
-size_t write_dram_latency = 10;
-size_t write_nvm_latency = 20;
-size_t write_ssd_latency = 100;
+size_t dram_write_latency = 10;
+size_t nvm_write_latency = 50;
+size_t ssd_write_latency = 100;
+size_t hdd_write_latency = 500;
 
 const size_t CLEAN_BLOCK = 100;
 const size_t DIRTY_BLOCK = 101;
@@ -132,13 +135,16 @@ size_t GetDeviceOffset(DeviceType device_type){
 size_t GetWriteLatency(DeviceType device_type){
   switch(device_type){
     case DEVICE_TYPE_DRAM:
-      return write_dram_latency;
+      return dram_write_latency;
 
     case DEVICE_TYPE_NVM:
-      return write_nvm_latency;
+      return nvm_write_latency;
 
     case DEVICE_TYPE_SSD:
-      return write_ssd_latency;
+      return ssd_write_latency;
+
+    case DEVICE_TYPE_HDD:
+      return hdd_write_latency;
 
     default:
     case DEVICE_TYPE_INVALID:
@@ -149,13 +155,16 @@ size_t GetWriteLatency(DeviceType device_type){
 size_t GetReadLatency(DeviceType device_type){
   switch(device_type){
     case DEVICE_TYPE_DRAM:
-      return read_dram_latency;
+      return dram_read_latency;
 
     case DEVICE_TYPE_NVM:
-      return read_nvm_latency;
+      return nvm_read_latency;
 
     case DEVICE_TYPE_SSD:
-      return read_ssd_latency;
+      return ssd_read_latency;
+
+    case DEVICE_TYPE_HDD:
+      return hdd_read_latency;
 
     default:
     case DEVICE_TYPE_INVALID:
@@ -197,9 +206,6 @@ void MoveVictim(DeviceType source,
 
     DeviceType destination = DeviceType::DEVICE_TYPE_INVALID;
 
-    std::cout << "Move victim : " << block_id << " ";
-    std::cout << "Source : " << DeviceTypeToString(source) << "\n";
-
     switch(source){
         case DEVICE_TYPE_DRAM:
           destination = DEVICE_TYPE_NVM;
@@ -210,6 +216,7 @@ void MoveVictim(DeviceType source,
           break;
 
         case DEVICE_TYPE_SSD:
+          destination = DEVICE_TYPE_HDD;
           return;
 
         default:
@@ -217,11 +224,12 @@ void MoveVictim(DeviceType source,
           exit(EXIT_FAILURE);
       }
 
+    std::cout << "Move victim : " << block_id << " ";
+    std::cout << "Source : " << DeviceTypeToString(source) << " ";
+    std::cout << "Destination : " << DeviceTypeToString(destination) << "\n";
+
     // Copy to device
     Copy(destination, source, block_id);
-
-    // Print
-    PrintMachine();
   }
 
 }
@@ -240,15 +248,10 @@ void ReadBlock(const size_t& block_id){
   }
 
   memory_device_type = LocateInMemoryDevices(block_id);
-
-  // Found on DRAM
-  if(memory_device_type == DeviceType::DEVICE_TYPE_DRAM) {
-    total_duration += read_dram_latency;
-  }
+  total_duration += GetReadLatency(memory_device_type);
 
   // Found on NVM
   if(memory_device_type == DeviceType::DEVICE_TYPE_NVM){
-    total_duration += read_nvm_latency;
 
     // Migrate bothways?
     if(state.hierarchy_type == HierarchyType::HIERARCHY_TYPE_DRAM_NVM ||
@@ -290,7 +293,7 @@ void MachineHelper() {
 
   size_t upper_bound = total_slots - 1;
   double theta = 1.5;
-  size_t sample_count = 10000/(scale_factor * scale_factor);
+  size_t sample_count = 10000/scale_factor;
   size_t sample_itr;
   double seed = 23;
   srand(seed);

@@ -55,15 +55,15 @@ extern size_t nvm_device_size;
 extern size_t ssd_device_size;
 extern size_t hdd_device_size;
 
-extern size_t read_dram_latency;
-extern size_t read_nvm_latency;
-extern size_t read_ssd_latency;
-extern size_t read_hdd_latency;
+extern size_t dram_read_latency;
+extern size_t nvm_read_latency;
+extern size_t ssd_read_latency;
+extern size_t hdd_read_latency;
 
-extern size_t write_dram_latency;
-extern size_t write_nvm_latency;
-extern size_t write_ssd_latency;
-extern size_t write_hdd_latency;
+extern size_t dram_write_latency;
+extern size_t nvm_write_latency;
+extern size_t ssd_write_latency;
+extern size_t hdd_write_latency;
 
 void Usage(FILE *out);
 

@@ -30,6 +30,8 @@ std::string DeviceTypeToString(const DeviceType& device_type){
       return "NVM";
     case DEVICE_TYPE_SSD:
       return "SSD";
+    case DEVICE_TYPE_HDD:
+      return "HDD";
     default:
       return "INVALID";
   }
