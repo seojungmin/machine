@@ -53,9 +53,15 @@ enum MigrationType {
 };
 
 
+std::string HierarchyTypeToString(const HierarchyType& hierarchy_type);
+
 std::string CachingTypeToString(const CachingType& caching_type);
 
 std::string DeviceTypeToString(const DeviceType& device_type);
+
+std::string LoggingTypeToString(const LoggingType& logging_type);
+
+std::string MigrationTypeToString(const MigrationType& migration_type);
 
 
 }  // End machine namespace

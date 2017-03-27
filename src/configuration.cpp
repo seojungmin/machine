@@ -15,6 +15,7 @@ void Usage() {
       "\n"
       "Command line options : machine <options>\n"
       "   -a --hierarchy_type                 :  hierarchy type\n"
+      "   -c --caching_type                   :  caching type\n"
       "   -f --migration_frequency            :  migration frequency\n"
       "   -l --logging_type                   :  logging type\n"
       "   -m --migration_type                 :  migration type\n"
@@ -26,6 +27,7 @@ void Usage() {
 
 static struct option opts[] = {
     {"hierarchy_type", optional_argument, NULL, 'a'},
+    {"caching_type", optional_argument, NULL, 'c'},
     {"migration_frequency", optional_argument, NULL, 'f'},
     {"logging_type", optional_argument, NULL, 'l'},
     {"migration_type", optional_argument, NULL, 'm'},
@@ -40,22 +42,19 @@ static void ValidateHierarchyType(const configuration &state) {
     exit(EXIT_FAILURE);
   }
   else {
-    switch (state.hierarchy_type) {
-      case HIERARCHY_TYPE_NVM:
-        printf("%30s : %s\n", "hierarchy_type", "HIERARCHY_TYPE_NVM");
-        break;
-      case HIERARCHY_TYPE_DRAM_NVM:
-        printf("%30s : %s\n", "hierarchy_type", "HIERARCHY_TYPE_DRAM_NVM");
-        break;
-      case HIERARCHY_TYPE_DRAM_NVM_SSD:
-        printf("%30s : %s\n", "hierarchy_type", "HIERARCHY_TYPE_DRAM_NVM_SSD");
-        break;
-      case HIERARCHY_TYPE_DRAM_NVM_SSD_HDD:
-        printf("%30s : %s\n", "hierarchy_type", "HIERARCHY_TYPE_DRAM_NVM_SSD_HDD");
-        break;
-      default:
-        break;
-    }
+    printf("%30s : %s\n", "caching_type",
+           HierarchyTypeToString(state.hierarchy_type).c_str());
+  }
+}
+
+static void ValidateCachingType(const configuration &state) {
+  if (state.caching_type < 1 || state.caching_type > 4) {
+    printf("Invalid caching_type :: %d\n", state.caching_type);
+    exit(EXIT_FAILURE);
+  }
+  else {
+    printf("%30s : %s\n", "caching_type",
+           CachingTypeToString(state.caching_type).c_str());
   }
 }
 
@@ -65,16 +64,8 @@ static void ValidateLoggingType(const configuration &state) {
     exit(EXIT_FAILURE);
   }
   else {
-    switch (state.logging_type) {
-      case LOGGING_TYPE_WAL:
-        printf("%30s : %s\n", "logging_type", "LOGGING_TYPE_WAL");
-        break;
-      case LOGGING_TYPE_WBL:
-        printf("%30s : %s\n", "logging_type", "LOGGING_TYPE_WBL");
-        break;
-      default:
-        break;
-    }
+    printf("%30s : %s\n", "logging_type",
+           LoggingTypeToString(state.logging_type).c_str());
   }
 }
 
@@ -84,46 +75,13 @@ static void ValidateMigrationType(const configuration &state) {
     exit(EXIT_FAILURE);
   }
   else {
-    switch (state.migration_type) {
-      case MIGRATION_TYPE_DOWNWARDS:
-        printf("%30s : %s\n", "migration_type", "MIGRATION_TYPE_DOWNWARDS");
-        break;
-      case MIGRATION_TYPE_BOTHWAYS:
-        printf("%30s : %s\n", "migration_type", "MIGRATION_TYPE_BOTHWAYS");
-        break;
-      default:
-        break;
-    }
+    printf("%30s : %s\n", "migration_type",
+           MigrationTypeToString(state.migration_type).c_str());
   }
 }
 
 static void ValidateMigrationFrequency(const configuration &state){
   printf("%30s : %lu\n", "migration_frequency", state.migration_frequency);
-}
-
-static void ValidateCachingType(const configuration &state) {
-  if (state.caching_type < 1 || state.caching_type > 4) {
-    printf("Invalid caching_type :: %d\n", state.caching_type);
-    exit(EXIT_FAILURE);
-  }
-  else {
-    switch (state.caching_type) {
-      case CACHING_TYPE_FIFO:
-        printf("%30s : %s\n", "caching_type", "CACHING_TYPE_FIFO");
-        break;
-      case CACHING_TYPE_LRU:
-        printf("%30s : %s\n", "caching_type", "CACHING_TYPE_LRU");
-        break;
-      case CACHING_TYPE_LFU:
-        printf("%30s : %s\n", "caching_type", "CACHING_TYPE_LFU");
-        break;
-      case CACHING_TYPE_ARC:
-        printf("%30s : %s\n", "caching_type", "CACHING_TYPE_ARC");
-        break;
-      default:
-        break;
-    }
-  }
 }
 
 static void ValidateDirectNVM(const configuration &state) {
@@ -203,7 +161,7 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
   while (1) {
     int idx = 0;
     int c = getopt_long(argc, argv,
-                        "a:f:l:m:n:vh",
+                        "a:c:f:l:m:n:vh",
                         opts, &idx);
 
     if (c == -1) break;
@@ -211,6 +169,9 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
     switch (c) {
       case 'a':
         state.hierarchy_type = (HierarchyType)atoi(optarg);
+        break;
+      case 'c':
+        state.caching_type = (CachingType)atoi(optarg);
         break;
       case 'l':
         state.logging_type = (LoggingType)atoi(optarg);

@@ -38,5 +38,48 @@ std::string DeviceTypeToString(const DeviceType& device_type){
 
 }
 
+std::string HierarchyTypeToString(const HierarchyType& hierarchy_type){
+
+  switch (hierarchy_type) {
+    case HIERARCHY_TYPE_NVM:
+      return "NVM";
+    case HIERARCHY_TYPE_DRAM_NVM:
+      return "DRAM-NVM";
+    case HIERARCHY_TYPE_DRAM_NVM_SSD:
+      return "DRAM-NVM-SSD";
+    case HIERARCHY_TYPE_DRAM_NVM_SSD_HDD:
+      return "DRAM-NVM-SSD-HDD";
+    default:
+      return "INVALID";
+  }
+
+}
+
+std::string LoggingTypeToString(const LoggingType& logging_type){
+
+  switch (logging_type) {
+    case LOGGING_TYPE_WAL:
+      return "WAL";
+    case LOGGING_TYPE_WBL:
+      return "WBL";
+    default:
+      return "INVALID";
+  }
+
+}
+
+std::string MigrationTypeToString(const MigrationType& migration_type) {
+
+  switch (migration_type) {
+    case MIGRATION_TYPE_DOWNWARDS:
+      return "DOWNWARDS";
+    case MIGRATION_TYPE_BOTHWAYS:
+      return "BOTHWAYS";
+    default:
+      return "INVALID";
+  }
+
+}
+
 }  // End machine namespace
 
