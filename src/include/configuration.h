@@ -82,6 +82,12 @@ class configuration {
   // list of devices in hierarchy
   std::vector<Device> devices;
 
+  // list of memory devices in hierarchy
+  std::vector<Device> memory_devices;
+
+  // list of storage devices in hierarchy
+  std::vector<Device> storage_devices;
+
   // directly access nvm ?
   bool direct_nvm;
 

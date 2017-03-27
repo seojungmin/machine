@@ -143,14 +143,20 @@ static void ConstructDeviceList(configuration &state){
   switch (state.hierarchy_type) {
     case HIERARCHY_TYPE_NVM: {
          state.devices = {nvm_device};
-       }
+         state.memory_devices = {nvm_device};
+         state.storage_devices = {};
+    }
     break;
     case HIERARCHY_TYPE_DRAM_NVM: {
-      state.devices = {dram_device, nvm_device};
+         state.devices = {dram_device, nvm_device};
+         state.memory_devices = {dram_device, nvm_device};
+         state.storage_devices = {};
     }
     break;
     case HIERARCHY_TYPE_DRAM_NVM_SSD: {
-      state.devices = {dram_device, nvm_device, ssd_device};
+         state.devices = {dram_device, nvm_device, ssd_device};
+         state.memory_devices = {dram_device, nvm_device};
+         state.storage_devices = {ssd_device};
     }
     break;
     default:

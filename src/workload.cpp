@@ -33,6 +33,9 @@ size_t write_dram_latency = 10;
 size_t write_nvm_latency = 20;
 size_t write_ssd_latency = 100;
 
+const size_t CLEAN_BLOCK = 100;
+const size_t DIRTY_BLOCK = 101;
+
 UNUSED_ATTRIBUTE static void WriteOutput(double duration) {
   // Convert to ms
   duration *= 1000;
@@ -51,127 +54,150 @@ UNUSED_ATTRIBUTE static void WriteOutput(double duration) {
   out.flush();
 }
 
+void PrintMachine(){
+
+  std::cout << "\n+++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
+  std::cout << "MACHINE\n";
+  for(auto device: state.devices){
+    std::cout << device.cache;
+  }
+  std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
+
+}
+
 void BootstrapMachine(const size_t& total_slots) {
 
   auto last_device = state.devices.back();
-  //std::cout << "Bootstrap device: " << DeviceTypeToString(last_device_type) << "\n";
-
   for(size_t slot_itr = 0; slot_itr < total_slots; slot_itr++){
-    last_device.cache.Put(slot_itr, slot_itr);
+    last_device.cache.Put(slot_itr, CLEAN_BLOCK);
   }
-
-  std::cout << last_device.cache;
 
 }
 
-DeviceType LocateMemoryDevice(const size_t& block_id){
+bool LocateInDevice(Device device,
+                    const size_t& block_id){
 
-  for(auto device : state.devices){
+  // Check device cache
+  try{
+    device.cache.Get(block_id);
+    return true;
+  }
+  catch(const std::range_error& not_found){
+    // Nothing to do here!
+  }
 
-    DeviceType device_type = device.device_type;
-    if(device_type != DeviceType::DEVICE_TYPE_DRAM &&
-        device_type != DeviceType::DEVICE_TYPE_NVM){
-      continue;
+  return false;
+}
+
+DeviceType LocateInDevices(std::vector<Device> devices,
+                           const size_t& block_id){
+
+  for(auto device : devices){
+    auto found = LocateInDevice(device, block_id);
+    if(found == true){
+      return device.device_type;
     }
-
-    std::cout << "Check memory device: " << DeviceTypeToString(device_type) << "\n";
-    std::cout << device.cache;
-
-    // Check cache
-    try{
-      auto location = device.cache.Get(block_id);
-      std::cout << "Found at location: " << location;
-      std::cout << " in " << DeviceTypeToString(device_type) << "\n";
-      return device_type;
-    }
-    catch(const std::range_error& not_found){
-      // Nothing to do here!
-    }
-
   }
 
   return DeviceType::DEVICE_TYPE_INVALID;
 }
 
-DeviceType LocateStorageDevice(const size_t& block_id){
-
-  for(auto device : state.devices){
-
-    DeviceType device_type = device.device_type;
-    if(device_type != DeviceType::DEVICE_TYPE_SSD){
-      continue;
-    }
-
-    std::cout << "Check storage device: " << DeviceTypeToString(device_type) << "\n";
-    std::cout << device.cache;
-
-    // Check cache
-    try{
-      auto location = device.cache.Get(block_id);
-      std::cout << "Found at location: " << location;
-      std::cout << " in " << DeviceTypeToString(device_type) << "\n";
-      return device_type;
-    }
-    catch(const std::range_error& not_found){
-      // Nothing to do here!
-    }
-
-  }
-
-  return DeviceType::DEVICE_TYPE_INVALID;
+DeviceType LocateInMemoryDevices(const size_t& block_id){
+  return LocateInDevices(state.memory_devices, block_id);
 }
 
-void CopyToDRAM(DeviceType device_type,
-                const size_t& block_id){
+DeviceType LocateInStorageDevices(const size_t& block_id){
+  return LocateInDevices(state.storage_devices, block_id);
+}
 
+size_t GetDeviceOffset(DeviceType device_type){
+
+  size_t device_itr = 0;
+  for(auto device : state.devices){
+    if(device.device_type == device_type){
+      return device_itr;
+    }
+    device_itr++;
+  }
+
+  std::cout << "Did not find device of type : " <<
+      DeviceTypeToString(device_type);
+  exit(EXIT_FAILURE);
+}
+
+size_t GetWriteLatency(DeviceType device_type){
+  switch(device_type){
+    case DEVICE_TYPE_DRAM:
+      return write_dram_latency;
+
+    case DEVICE_TYPE_NVM:
+      return write_nvm_latency;
+
+    case DEVICE_TYPE_SSD:
+      return write_ssd_latency;
+
+    default:
+    case DEVICE_TYPE_INVALID:
+      exit(EXIT_FAILURE);
+  }
+}
+
+size_t GetReadLatency(DeviceType device_type){
+  switch(device_type){
+    case DEVICE_TYPE_DRAM:
+      return read_dram_latency;
+
+    case DEVICE_TYPE_NVM:
+      return read_nvm_latency;
+
+    case DEVICE_TYPE_SSD:
+      return read_ssd_latency;
+
+    default:
+    case DEVICE_TYPE_INVALID:
+      exit(EXIT_FAILURE);
+  }
+}
+
+void Copy(DeviceType destination_device_type,
+          DeviceType source_device_type,
+          const size_t& block_id){
   UNUSED_ATTRIBUTE size_t victim_block;
 
-  // Copy to DRAM
-  for(auto device : state.devices){
+  // Write to destination device
+  auto device_offset = GetDeviceOffset(destination_device_type);
+  auto device_cache = state.devices[device_offset].cache;
+  victim_block = device_cache.Put(block_id, CLEAN_BLOCK);
 
-    DeviceType device_type = device.device_type;
-    if(device_type == DeviceType::DEVICE_TYPE_DRAM){
-      victim_block = device.cache.Put(block_id, 0);
-      total_duration += write_dram_latency;
-    }
+  total_duration += GetWriteLatency(destination_device_type);
+  total_duration += GetReadLatency(source_device_type);
 
-  }
-
-  if(device_type == DeviceType::DEVICE_TYPE_SSD){
-    total_duration += read_ssd_latency;
-  }
-
-  if(device_type == DeviceType::DEVICE_TYPE_NVM){
-    total_duration += read_nvm_latency;
-  }
-
-  // Move victim if needed
+  // TODO: Move victim
 
 }
 
 void ReadBlock(const size_t& block_id){
   std::cout << "READ  " << block_id << "\n";
 
-  auto memory_device_type = LocateMemoryDevice(block_id);
-  auto storage_device_type = LocateStorageDevice(block_id);
-
-  std::cout << "Memory  Device: " << DeviceTypeToString(memory_device_type) << "\n";
-  std::cout << "Storage Device: " << DeviceTypeToString(storage_device_type) << "\n";
+  auto memory_device_type = LocateInMemoryDevices(block_id);
+  auto storage_device_type = LocateInStorageDevices(block_id);
 
   // Not found on DRAM & NVM
   if(memory_device_type == DeviceType::DEVICE_TYPE_INVALID){
-    CopyToDRAM(storage_device_type, block_id);
+    Copy(DeviceType::DEVICE_TYPE_DRAM,
+         storage_device_type,
+         block_id);
   }
 
-  memory_device_type = LocateMemoryDevice(block_id);
+  memory_device_type = LocateInMemoryDevices(block_id);
 
   // Found on DRAM
   if(memory_device_type == DeviceType::DEVICE_TYPE_DRAM) {
     total_duration += read_dram_latency;
   }
+
   // Found on NVM
-  else if(memory_device_type == DeviceType::DEVICE_TYPE_NVM){
-    // TODO: Migrate to DRAM
+  if(memory_device_type == DeviceType::DEVICE_TYPE_NVM){
     total_duration += read_nvm_latency;
   }
 
@@ -197,6 +223,9 @@ void MachineHelper() {
   // Bootstrap
   BootstrapMachine(total_slots);
 
+  // Print machine caches
+  PrintMachine();
+
   size_t upper_bound = total_slots - 1;
   double theta = 1.5;
   size_t sample_count = 10;
@@ -212,7 +241,7 @@ void MachineHelper() {
     auto block_id = zipf_generator.GetNextNumber();
     auto operation_sample = rand() % 100;
 
-    std::cout << "Operation : " << sample_itr << " :: ";
+    std::cout << "\nOperation : " << sample_itr << " :: ";
     if(operation_sample < update_ratio) {
       WriteBlock(block_id);
     }
@@ -224,6 +253,9 @@ void MachineHelper() {
     std::cout << "-------------------------";
 
   }
+
+  // Print machine caches
+  PrintMachine();
 
 }
 
