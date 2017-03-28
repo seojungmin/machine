@@ -44,14 +44,6 @@ enum LoggingType {
 
 };
 
-enum MigrationType {
-  MIGRATION_TYPE_INVALID = 0,
-
-  MIGRATION_TYPE_DOWNWARDS = 1,
-  MIGRATION_TYPE_BOTHWAYS = 2
-
-};
-
 DeviceType GetLastDevice(const HierarchyType& hierarchy_type);
 
 std::string HierarchyTypeToString(const HierarchyType& hierarchy_type);
@@ -61,8 +53,6 @@ std::string CachingTypeToString(const CachingType& caching_type);
 std::string DeviceTypeToString(const DeviceType& device_type);
 
 std::string LoggingTypeToString(const LoggingType& logging_type);
-
-std::string MigrationTypeToString(const MigrationType& migration_type);
 
 
 }  // End machine namespace

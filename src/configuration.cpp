@@ -16,10 +16,10 @@ void Usage() {
       "Command line options : machine <options>\n"
       "   -a --hierarchy_type                 :  hierarchy type\n"
       "   -c --caching_type                   :  caching type\n"
-      "   -f --migration_frequency            :  migration frequency\n"
+      "   -f --migration_frequency            :  migration frequency from NVM to DRAM\n"
       "   -l --logging_type                   :  logging type\n"
-      "   -m --migration_type                 :  migration type\n"
-      "   -n --direct_nvm                     :  direct nvm\n"
+      "   -n --copy_to_nvm                    :  copy to nvm first\n"
+      "   -m --migrate_from_nvm               :  migrate from nvm to dram\n"
       "   -s --machine_size                   :  machine size\n"
       "   -v --verbose                        :  verbose\n";
   exit(EXIT_FAILURE);
@@ -30,8 +30,8 @@ static struct option opts[] = {
     {"caching_type", optional_argument, NULL, 'c'},
     {"migration_frequency", optional_argument, NULL, 'f'},
     {"logging_type", optional_argument, NULL, 'l'},
-    {"migration_type", optional_argument, NULL, 'm'},
-    {"direct_nvm", optional_argument, NULL, 'n'},
+    {"copy_to_nvm", optional_argument, NULL, 'n'},
+    {"migrate_from_nvm", optional_argument, NULL, 'm'},
     {"machine_size", optional_argument, NULL, 's'},
     {"verbose", optional_argument, NULL, 'v'},
     {NULL, 0, NULL, 0}
@@ -70,23 +70,16 @@ static void ValidateLoggingType(const configuration &state) {
   }
 }
 
-static void ValidateMigrationType(const configuration &state) {
-  if (state.migration_type < 1 || state.migration_type > 3) {
-    printf("Invalid migration_type :: %d\n", state.migration_type);
-    exit(EXIT_FAILURE);
-  }
-  else {
-    printf("%30s : %s\n", "migration_type",
-           MigrationTypeToString(state.migration_type).c_str());
-  }
-}
-
 static void ValidateMigrationFrequency(const configuration &state){
   printf("%30s : %lu\n", "migration_frequency", state.migration_frequency);
 }
 
-static void ValidateDirectNVM(const configuration &state) {
-  printf("%30s : %d\n", "direct_nvm", state.direct_nvm);
+static void ValidateCopyToNVM(const configuration &state) {
+  printf("%30s : %d\n", "copy_to_nvm", state.copy_to_nvm);
+}
+
+static void ValidateMigrateFromNVM(const configuration &state) {
+  printf("%30s : %d\n", "migrate_from_nvm", state.migrate_from_nvm);
 }
 
 static void ValidateMachineSize(const configuration &state) {
@@ -152,10 +145,11 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
 
   state.hierarchy_type = HIERARCHY_TYPE_DRAM_NVM_SSD_HDD;
   state.logging_type = LOGGING_TYPE_WBL;
-  state.migration_type = MIGRATION_TYPE_DOWNWARDS;
   state.caching_type = CACHING_TYPE_FIFO;
   state.machine_size = 1000;
+  state.migrate_from_nvm = true;
   state.migration_frequency = 10;
+  state.copy_to_nvm = true;
 
   // Parse args
   while (1) {
@@ -173,17 +167,17 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
       case 'c':
         state.caching_type = (CachingType)atoi(optarg);
         break;
+      case 'f':
+        state.migration_frequency = atoi(optarg);
+        break;
       case 'l':
         state.logging_type = (LoggingType)atoi(optarg);
         break;
       case 'm':
-        state.migration_type = (MigrationType)atoi(optarg);
-        break;
-      case 'f':
-        state.migration_frequency = atoi(optarg);
+        state.migrate_from_nvm = atoi(optarg);
         break;
       case 'n':
-        state.direct_nvm = atoi(optarg);
+        state.copy_to_nvm = atoi(optarg);
         break;
       case 's':
         state.machine_size = atoi(optarg);
@@ -208,10 +202,10 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
 
   ValidateHierarchyType(state);
   ValidateLoggingType(state);
-  ValidateMigrationType(state);
   ValidateCachingType(state);
   ValidateMachineSize(state);
-  ValidateDirectNVM(state);
+  ValidateCopyToNVM(state);
+  ValidateMigrateFromNVM(state);
   ValidateMigrationFrequency(state);
 
   printf("//===----------------------------------------------------------------------===//\n");

@@ -23,8 +23,6 @@ size_t query_itr;
 
 double total_duration = 0;
 
-size_t scale_factor = 10;
-
 const size_t CLEAN_BLOCK = 100;
 const size_t DIRTY_BLOCK = 101;
 
@@ -207,9 +205,17 @@ void ReadBlock(const size_t& block_id){
 
   // Not found on DRAM & NVM
   if(memory_device_type == DeviceType::DEVICE_TYPE_INVALID){
-    Copy(DeviceType::DEVICE_TYPE_DRAM,
-         storage_device_type,
-         block_id);
+    // Copy to NVM first if possible
+    if(state.copy_to_nvm == true) {
+      Copy(DeviceType::DEVICE_TYPE_NVM,
+           storage_device_type,
+           block_id);
+    }
+    else {
+      Copy(DeviceType::DEVICE_TYPE_DRAM,
+           storage_device_type,
+           block_id);
+    }
   }
 
   memory_device_type = LocateInMemoryDevices(block_id);
@@ -218,10 +224,10 @@ void ReadBlock(const size_t& block_id){
   // Found on NVM
   if(memory_device_type == DeviceType::DEVICE_TYPE_NVM){
 
-    // Migrate bothways?
-    if(state.migration_type == MigrationType::MIGRATION_TYPE_BOTHWAYS){
+    // Migrate from NVM to DRAM
+    if(state.migrate_from_nvm == true){
       if(rand() % state.migration_frequency == 0){
-        std::cout << "Migrate upwards : " << block_id << "\n";
+        std::cout << "Migrate upwards to DRAM : " << block_id << "\n";
         Copy(DeviceType::DEVICE_TYPE_DRAM,
              DeviceType::DEVICE_TYPE_NVM,
              block_id);

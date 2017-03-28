@@ -30,14 +30,14 @@ class configuration {
   // list of storage devices in hierarchy
   std::vector<Device> storage_devices;
 
-  // directly access nvm ?
-  bool direct_nvm;
-
   // logging type
   LoggingType logging_type;
 
-  // migration type
-  MigrationType migration_type;
+  // migrate from nvm to dram
+  bool migrate_from_nvm;
+
+  // copy to nvm first instead of dram
+  bool copy_to_nvm;
 
   // caching type
   CachingType caching_type;

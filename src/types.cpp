@@ -68,19 +68,6 @@ std::string LoggingTypeToString(const LoggingType& logging_type){
 
 }
 
-std::string MigrationTypeToString(const MigrationType& migration_type) {
-
-  switch (migration_type) {
-    case MIGRATION_TYPE_DOWNWARDS:
-      return "DOWNWARDS";
-    case MIGRATION_TYPE_BOTHWAYS:
-      return "BOTHWAYS";
-    default:
-      return "INVALID";
-  }
-
-}
-
 DeviceType GetLastDevice(const HierarchyType& hierarchy_type){
 
   switch (hierarchy_type) {
