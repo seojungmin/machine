@@ -36,7 +36,7 @@ static struct option opts[] = {
 };
 
 static void ValidateHierarchyType(const configuration &state) {
-  if (state.hierarchy_type < 1 || state.hierarchy_type > 3) {
+  if (state.hierarchy_type < 1 || state.hierarchy_type > 4) {
     printf("Invalid hierarchy_type :: %d\n", state.hierarchy_type);
     exit(EXIT_FAILURE);
   }
@@ -108,6 +108,12 @@ static void ConstructDeviceList(configuration &state){
          state.devices = {dram_device, nvm_device};
          state.memory_devices = {dram_device, nvm_device};
          state.storage_devices = {nvm_device};
+    }
+    break;
+    case HIERARCHY_TYPE_DRAM_SSD: {
+         state.devices = {dram_device, ssd_device};
+         state.memory_devices = {dram_device};
+         state.storage_devices = {ssd_device};
     }
     break;
     case HIERARCHY_TYPE_DRAM_NVM_SSD: {

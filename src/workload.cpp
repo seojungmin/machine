@@ -251,12 +251,11 @@ void BringBlockToStorage(const size_t& block_id){
 
   auto memory_device_type = LocateInMemoryDevices(block_id);
   auto nvm_exists = DeviceExists(DeviceType::DEVICE_TYPE_NVM);
-  auto ssd_exists = DeviceExists(DeviceType::DEVICE_TYPE_SSD);
 
   // Check if it is on DRAM
   if(memory_device_type == DeviceType::DEVICE_TYPE_DRAM){
     // Copy to NVM first if it exists in hierarchy
-    if(ssd_exists == false || nvm_exists == true) {
+    if(nvm_exists == true) {
       Copy(DeviceType::DEVICE_TYPE_NVM,
            memory_device_type,
            block_id);
@@ -302,8 +301,9 @@ void UpdateBlock(const size_t& block_id) {
   if(memory_device_type == DeviceType::DEVICE_TYPE_DRAM){
     auto device_offset = GetDeviceOffset(memory_device_type);
     auto device_cache = state.devices[device_offset].cache;
-    auto victim = device_cache.Put(block_id, DIRTY_BLOCK);
+
     // Check victim
+    auto victim = device_cache.Put(block_id, DIRTY_BLOCK);
     if(victim.block_id != INVALID_KEY){
       exit(EXIT_FAILURE);
     }
@@ -322,9 +322,10 @@ void FlushBlock(const size_t& block_id) {
   if(memory_device_type == DeviceType::DEVICE_TYPE_DRAM){
     auto device_offset = GetDeviceOffset(memory_device_type);
     auto device_cache = state.devices[device_offset].cache;
+
+    // Bring block to storage
     auto block_status = device_cache.Get(block_id);
     if(IsClean(block_status) == false){
-      // Bring block to storage
       BringBlockToStorage(block_id);
     }
   }
