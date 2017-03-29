@@ -100,13 +100,13 @@ static void ConstructDeviceList(configuration &state){
   switch (state.hierarchy_type) {
     case HIERARCHY_TYPE_NVM: {
          state.devices = {nvm_device};
-         state.memory_devices = {};
+         state.memory_devices = {nvm_device};
          state.storage_devices = {nvm_device};
     }
     break;
     case HIERARCHY_TYPE_DRAM_NVM: {
          state.devices = {dram_device, nvm_device};
-         state.memory_devices = {dram_device};
+         state.memory_devices = {dram_device, nvm_device};
          state.storage_devices = {nvm_device};
     }
     break;

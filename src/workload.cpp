@@ -92,9 +92,9 @@ DeviceType LocateInDevices(std::vector<Device> devices,
   return DeviceType::DEVICE_TYPE_INVALID;
 }
 
-bool NVMExists(){
+bool DeviceExists(const DeviceType& device_type){
   for(auto device : state.memory_devices){
-    if(device.device_type == DeviceType::DEVICE_TYPE_NVM){
+    if(device.device_type == device_type){
       return true;
     }
   }
@@ -109,7 +109,7 @@ DeviceType LocateInStorageDevices(const size_t& block_id){
   return LocateInDevices(state.storage_devices, block_id);
 }
 
-size_t GetDeviceOffset(DeviceType device_type){
+size_t GetDeviceOffset(const DeviceType& device_type){
 
   size_t device_itr = 0;
   for(auto device : state.devices){
@@ -214,13 +214,12 @@ void BringBlockToMemory(const size_t& block_id){
 
   auto memory_device_type = LocateInMemoryDevices(block_id);
   auto storage_device_type = LocateInStorageDevices(block_id);
-  auto nvm_exists = NVMExists();
-  bool migrate_to_dram = (rand() % state.migration_frequency == 0);
+  auto nvm_exists = DeviceExists(DeviceType::DEVICE_TYPE_NVM);
 
   // Not found on DRAM & NVM
   if(memory_device_type == DeviceType::DEVICE_TYPE_INVALID){
     // Copy to NVM first if it exists in hierarchy
-    if(nvm_exists == true && migrate_to_dram == false) {
+    if(nvm_exists == true) {
       Copy(DeviceType::DEVICE_TYPE_NVM,
            storage_device_type,
            block_id);
@@ -232,17 +231,32 @@ void BringBlockToMemory(const size_t& block_id){
     }
   }
 
+  // NVM to DRAM migration
+  memory_device_type = LocateInMemoryDevices(block_id);
+  if(memory_device_type == DeviceType::DEVICE_TYPE_NVM){
+    auto dram_exists = DeviceExists(DeviceType::DEVICE_TYPE_DRAM);
+    bool migrate_to_dram = (rand() % state.migration_frequency == 0);
+    if(dram_exists == true){
+      if(migrate_to_dram == true){
+        Copy(DeviceType::DEVICE_TYPE_DRAM,
+             DeviceType::DEVICE_TYPE_NVM,
+             block_id);
+      }
+    }
+  }
+
 }
 
 void BringBlockToStorage(const size_t& block_id){
 
   auto memory_device_type = LocateInMemoryDevices(block_id);
-  auto nvm_exists = NVMExists();
+  auto nvm_exists = DeviceExists(DeviceType::DEVICE_TYPE_NVM);
+  auto ssd_exists = DeviceExists(DeviceType::DEVICE_TYPE_SSD);
 
   // Check if it is on DRAM
   if(memory_device_type == DeviceType::DEVICE_TYPE_DRAM){
     // Copy to NVM first if it exists in hierarchy
-    if(nvm_exists == true) {
+    if(ssd_exists == false || nvm_exists == true) {
       Copy(DeviceType::DEVICE_TYPE_NVM,
            memory_device_type,
            block_id);
