@@ -42,7 +42,12 @@ Block CACHE_TEMPLATE_TYPE::Put(const Key& key,
     // add new element to the cache
     if (CurrentCapacity() + 1 > capacity_) {
       victim_key = cache_policy_.Victim();
-      victim_value = Get(victim_key, false);
+      try{
+        victim_value = Get(victim_key, false);
+      }
+      catch(const std::range_error& not_found){
+        // Nothing to do here!
+      }
       Erase(victim_key);
     }
 
@@ -124,7 +129,7 @@ CACHE_TEMPLATE_TYPE::LocateEntry(const Key& key) const {
 }
 
 CACHE_TEMPLATE_ARGUMENT
-void CACHE_TEMPLATE_TYPE::Print(){
+void CACHE_TEMPLATE_TYPE::Print() const {
 
   std::cout << "SIZE: " << cache_items_map.size() << "\n";
 

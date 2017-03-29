@@ -41,7 +41,7 @@ class Cache {
 
   size_t CurrentCapacity() const;
 
-  void Print();
+  void Print() const;
 
  protected:
 

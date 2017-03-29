@@ -50,6 +50,10 @@ class LFUCachePolicy : public ICachePolicy<Key> {
 
   void Erase(const Key& key) override {
 
+    if(lfu_storage.count(key) == 0){
+      return;
+    }
+
     frequency_storage.erase(lfu_storage[key]);
     lfu_storage.erase(key);
 

@@ -4,7 +4,7 @@
 
 namespace machine {
 
-size_t scale_factor = 1024;
+size_t scale_factor = 4;
 
 size_t dram_device_size = 2 * scale_factor;
 size_t nvm_device_size = 32 * scale_factor;
@@ -17,11 +17,14 @@ size_t ssd_read_latency = 10;
 size_t hdd_read_latency = 50;
 
 size_t dram_write_latency = 1;
-size_t nvm_write_latency = 5;
-size_t ssd_write_latency = 10;
+size_t nvm_write_latency = 10;
+size_t ssd_write_latency = 20;
 size_t hdd_write_latency = 50;
 
 size_t GetWriteLatency(DeviceType device_type){
+
+  DLOG(INFO) << "WRITE :: " << DeviceTypeToString(device_type) << "\n";
+
   switch(device_type){
     case DEVICE_TYPE_DRAM:
       return dram_write_latency;
@@ -39,6 +42,9 @@ size_t GetWriteLatency(DeviceType device_type){
 }
 
 size_t GetReadLatency(DeviceType device_type){
+
+  DLOG(INFO) << "READ :: " << DeviceTypeToString(device_type) << "\n";
+
   switch(device_type){
     case DEVICE_TYPE_DRAM:
       return dram_read_latency;

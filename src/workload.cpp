@@ -158,8 +158,8 @@ void Copy(DeviceType destination,
   auto device_cache = state.devices[device_offset].cache;
   auto victim = device_cache.Put(block_id, CLEAN_BLOCK);
 
-  total_duration += GetWriteLatency(destination);
   total_duration += GetReadLatency(source);
+  total_duration += GetWriteLatency(destination);
 
   // Move victim
   auto victim_key = victim.block_id;
@@ -172,14 +172,23 @@ void Copy(DeviceType destination,
 
 DeviceType GetLowerDevice(DeviceType source){
   DeviceType destination = DeviceType::DEVICE_TYPE_INVALID;
-  switch(source){
-    case DEVICE_TYPE_DRAM:
-      destination = DEVICE_TYPE_NVM;
-      break;
+  auto nvm_exists = DeviceExists(DeviceType::DEVICE_TYPE_NVM);
 
-    case DEVICE_TYPE_NVM:
+  switch(source){
+    case DEVICE_TYPE_DRAM: {
+      if(nvm_exists == true) {
+        destination = DEVICE_TYPE_NVM;
+      }
+      else {
+        destination = DEVICE_TYPE_SSD;
+      }
+      break;
+    }
+
+    case DEVICE_TYPE_NVM: {
       destination = DEVICE_TYPE_SSD;
       break;
+    }
 
     default:
     case DEVICE_TYPE_INVALID:
@@ -201,8 +210,8 @@ void MoveVictim(DeviceType source,
   if(victim_exists && volatile_device && is_dirty){
     auto destination = GetLowerDevice(source);
 
-    std::cout << "Move victim : " << block_id << " ";
-    std::cout << PrintCleanStatus(is_clean) << " ";
+    DLOG(INFO) << "Move victim : " << block_id << " ";
+    DLOG(INFO) << PrintCleanStatus(is_clean) << " ";
 
     // Copy to device
     Copy(destination, source, block_id);
@@ -266,15 +275,17 @@ void BringBlockToStorage(const size_t& block_id){
            block_id);
     }
 
-    // Remove from DRAM
+    // Mark block as clean
     auto device_offset = GetDeviceOffset(memory_device_type);
     auto device_cache = state.devices[device_offset].cache;
-    device_cache.Erase(block_id);
+    auto victim = device_cache.Put(block_id, CLEAN_BLOCK);
+    if(victim.block_id != INVALID_KEY){
+      exit(EXIT_FAILURE);
+    }
 
     // Update duration
     total_duration += GetWriteLatency(memory_device_type);
   }
-
 
 }
 
@@ -285,6 +296,7 @@ void ReadBlock(const size_t& block_id){
   // Bring block to memory if needed
   BringBlockToMemory(block_id);
 
+  // Update duration
   auto memory_device_type = LocateInMemoryDevices(block_id);
   total_duration += GetReadLatency(memory_device_type);
 
@@ -296,13 +308,11 @@ void UpdateBlock(const size_t& block_id) {
   // Bring block to memory if needed
   BringBlockToMemory(block_id);
 
-  // Write block on memory device
+  // Mark block as dirty
   auto memory_device_type = LocateInMemoryDevices(block_id);
   if(memory_device_type == DeviceType::DEVICE_TYPE_DRAM){
     auto device_offset = GetDeviceOffset(memory_device_type);
     auto device_cache = state.devices[device_offset].cache;
-
-    // Check victim
     auto victim = device_cache.Put(block_id, DIRTY_BLOCK);
     if(victim.block_id != INVALID_KEY){
       exit(EXIT_FAILURE);
@@ -322,8 +332,6 @@ void FlushBlock(const size_t& block_id) {
   if(memory_device_type == DeviceType::DEVICE_TYPE_DRAM){
     auto device_offset = GetDeviceOffset(memory_device_type);
     auto device_cache = state.devices[device_offset].cache;
-
-    // Bring block to storage
     auto block_status = device_cache.Get(block_id);
     if(IsClean(block_status) == false){
       BringBlockToStorage(block_id);
@@ -366,7 +374,7 @@ void MachineHelper() {
     auto block_id = zipf_generator.GetNextNumber();
     auto operation_sample = rand() % 100;
 
-    std::cout << "\nOperation : " << operation_itr << " :: ";
+    DLOG(INFO) << "\nOperation : " << operation_itr << " :: ";
     if(operation_sample < flush_ratio) {
       UpdateBlock(block_id);
       FlushBlock(block_id);
@@ -378,10 +386,12 @@ void MachineHelper() {
       ReadBlock(block_id);
     }
 
-    std::cout << "Duration : " << total_duration << "\n";
+    DLOG(INFO) << "Duration : " << total_duration << "\n";
     std::cout << "-------------------------";
 
   }
+
+  std::cout << "Duration : " << total_duration << "\n";
 
   // Print machine caches
   PrintMachine();
