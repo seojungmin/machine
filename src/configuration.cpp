@@ -18,9 +18,8 @@ void Usage() {
       "   -c --caching_type                   :  caching type\n"
       "   -f --migration_frequency            :  migration frequency from NVM to DRAM\n"
       "   -l --logging_type                   :  logging type\n"
-      "   -n --copy_to_nvm                    :  copy to nvm first\n"
-      "   -m --migrate_from_nvm               :  migrate from nvm to dram\n"
       "   -s --machine_size                   :  machine size\n"
+      "   -o --operation_count                :  operation count\n"
       "   -v --verbose                        :  verbose\n";
   exit(EXIT_FAILURE);
 }
@@ -30,9 +29,8 @@ static struct option opts[] = {
     {"caching_type", optional_argument, NULL, 'c'},
     {"migration_frequency", optional_argument, NULL, 'f'},
     {"logging_type", optional_argument, NULL, 'l'},
-    {"copy_to_nvm", optional_argument, NULL, 'n'},
-    {"migrate_from_nvm", optional_argument, NULL, 'm'},
     {"machine_size", optional_argument, NULL, 's'},
+    {"operation_count", optional_argument, NULL, 'o'},
     {"verbose", optional_argument, NULL, 'v'},
     {NULL, 0, NULL, 0}
 };
@@ -74,16 +72,12 @@ static void ValidateMigrationFrequency(const configuration &state){
   printf("%30s : %lu\n", "migration_frequency", state.migration_frequency);
 }
 
-static void ValidateCopyToNVM(const configuration &state) {
-  printf("%30s : %d\n", "copy_to_nvm", state.copy_to_nvm);
-}
-
-static void ValidateMigrateFromNVM(const configuration &state) {
-  printf("%30s : %d\n", "migrate_from_nvm", state.migrate_from_nvm);
-}
-
 static void ValidateMachineSize(const configuration &state) {
   printf("%30s : %lu\n", "machine_size", state.machine_size);
+}
+
+static void ValidateOperationCount(const configuration &state) {
+  printf("%30s : %lu\n", "operation_count", state.operation_count);
 }
 
 static void ConstructDeviceList(configuration &state){
@@ -147,15 +141,14 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
   state.logging_type = LOGGING_TYPE_WBL;
   state.caching_type = CACHING_TYPE_FIFO;
   state.machine_size = 1000;
-  state.migrate_from_nvm = true;
   state.migration_frequency = 10;
-  state.copy_to_nvm = true;
+  state.operation_count = 1000;
 
   // Parse args
   while (1) {
     int idx = 0;
     int c = getopt_long(argc, argv,
-                        "a:c:f:l:m:n:s:vh",
+                        "a:c:f:l:o:s:vh",
                         opts, &idx);
 
     if (c == -1) break;
@@ -173,11 +166,8 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
       case 'l':
         state.logging_type = (LoggingType)atoi(optarg);
         break;
-      case 'm':
-        state.migrate_from_nvm = atoi(optarg);
-        break;
-      case 'n':
-        state.copy_to_nvm = atoi(optarg);
+      case 'o':
+        state.operation_count = atoi(optarg);
         break;
       case 's':
         state.machine_size = atoi(optarg);
@@ -204,9 +194,8 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
   ValidateLoggingType(state);
   ValidateCachingType(state);
   ValidateMachineSize(state);
-  ValidateCopyToNVM(state);
-  ValidateMigrateFromNVM(state);
   ValidateMigrationFrequency(state);
+  ValidateOperationCount(state);
 
   printf("//===----------------------------------------------------------------------===//\n");
 

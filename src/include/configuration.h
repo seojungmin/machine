@@ -33,12 +33,6 @@ class configuration {
   // logging type
   LoggingType logging_type;
 
-  // migrate from nvm to dram
-  bool migrate_from_nvm;
-
-  // copy to nvm first instead of dram
-  bool copy_to_nvm;
-
   // caching type
   CachingType caching_type;
 
@@ -47,6 +41,9 @@ class configuration {
 
   // machine size
   size_t machine_size;
+
+  // operation count
+  size_t operation_count;
 
   // Verbose output
   bool verbose;

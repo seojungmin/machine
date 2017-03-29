@@ -92,6 +92,15 @@ DeviceType LocateInDevices(std::vector<Device> devices,
   return DeviceType::DEVICE_TYPE_INVALID;
 }
 
+bool NVMExists(){
+  for(auto device : state.memory_devices){
+    if(device.device_type == DeviceType::DEVICE_TYPE_NVM){
+      return true;
+    }
+  }
+  return false;
+}
+
 DeviceType LocateInMemoryDevices(const size_t& block_id){
   return LocateInDevices(state.memory_devices, block_id);
 }
@@ -163,8 +172,15 @@ void MoveVictim(DeviceType source,
                 const size_t& block_id,
                 const bool& is_clean){
 
-  // Check if we have a victim
-  if(block_id != INVALID_KEY){
+  // Skip moving it to durable storage if clean
+  if(is_clean == true){
+    return;
+  }
+
+  // Check if we have a victim and it is in DRAM
+  // It is also dirty
+  if(block_id != INVALID_KEY &&
+      source == DeviceType::DEVICE_TYPE_DRAM){
 
     DeviceType destination = DeviceType::DEVICE_TYPE_INVALID;
 
@@ -197,16 +213,16 @@ void MoveVictim(DeviceType source,
 
 }
 
-void ReadBlock(const size_t& block_id){
-  std::cout << "READ  " << block_id << "\n";
+void BringBlockToMemory(const size_t& block_id){
 
   auto memory_device_type = LocateInMemoryDevices(block_id);
   auto storage_device_type = LocateInStorageDevices(block_id);
+  auto nvm_exists = NVMExists();
 
   // Not found on DRAM & NVM
   if(memory_device_type == DeviceType::DEVICE_TYPE_INVALID){
-    // Copy to NVM first if possible
-    if(state.copy_to_nvm == true) {
+    // Copy to NVM first if it exists in hierarchy
+    if(nvm_exists == true) {
       Copy(DeviceType::DEVICE_TYPE_NVM,
            storage_device_type,
            block_id);
@@ -218,22 +234,25 @@ void ReadBlock(const size_t& block_id){
     }
   }
 
-  memory_device_type = LocateInMemoryDevices(block_id);
+}
+
+void ReadBlock(const size_t& block_id){
+  std::cout << "READ  " << block_id << "\n";
+
+  // Bring block to memory if needed
+  BringBlockToMemory(block_id);
+
+  auto memory_device_type = LocateInMemoryDevices(block_id);
   total_duration += GetReadLatency(memory_device_type);
 
-  // Found on NVM
+  // Found on NVM (middle tier)
   if(memory_device_type == DeviceType::DEVICE_TYPE_NVM){
-
-    // Migrate from NVM to DRAM
-    if(state.migrate_from_nvm == true){
-      if(rand() % state.migration_frequency == 0){
-        std::cout << "Migrate upwards to DRAM : " << block_id << "\n";
-        Copy(DeviceType::DEVICE_TYPE_DRAM,
-             DeviceType::DEVICE_TYPE_NVM,
-             block_id);
-      }
+    if(rand() % state.migration_frequency == 0){
+      std::cout << "Migrate upwards to DRAM : " << block_id << "\n";
+      Copy(DeviceType::DEVICE_TYPE_DRAM,
+           DeviceType::DEVICE_TYPE_NVM,
+           block_id);
     }
-
   }
 
 }
@@ -241,18 +260,20 @@ void ReadBlock(const size_t& block_id){
 void WriteBlock(const size_t& block_id) {
   std::cout << "WRITE " << block_id << "\n";
 
-  auto memory_device_type = LocateInMemoryDevices(block_id);
-  auto storage_device_type = LocateInStorageDevices(block_id);
-
-  // Not found on DRAM & NVM
-  if(memory_device_type == DeviceType::DEVICE_TYPE_INVALID){
-    Copy(DeviceType::DEVICE_TYPE_DRAM,
-         storage_device_type,
-         block_id);
-  }
+  // Bring block to memory if needed
+  BringBlockToMemory(block_id);
 
   // Write to block on memory device
-  memory_device_type = LocateInMemoryDevices(block_id);
+  auto memory_device_type = LocateInMemoryDevices(block_id);
+  if(memory_device_type == DeviceType::DEVICE_TYPE_DRAM){
+    auto device_offset = GetDeviceOffset(memory_device_type);
+    auto device_cache = state.devices[device_offset].cache;
+    auto victim = device_cache.Put(block_id, DIRTY_BLOCK);
+    // Check victim
+    if(victim.block_id != INVALID_KEY){
+      exit(EXIT_FAILURE);
+    }
+  }
   total_duration += GetWriteLatency(memory_device_type);
 
 }
@@ -277,8 +298,8 @@ void MachineHelper() {
 
   size_t upper_bound = total_slots - 1;
   double theta = 0.5;
-  size_t sample_count = 1000;
-  size_t sample_itr;
+  size_t operation_count = state.operation_count;
+  size_t operation_itr;
   double seed = 23;
   srand(seed);
   int update_ratio = 20;
@@ -286,11 +307,11 @@ void MachineHelper() {
   ZipfDistribution zipf_generator(upper_bound, theta);
   UniformDistribution uniform_generator(seed);
 
-  for(sample_itr = 0; sample_itr < sample_count; sample_itr++){
+  for(operation_itr = 0; operation_itr < operation_count; operation_itr++){
     auto block_id = zipf_generator.GetNextNumber();
     auto operation_sample = rand() % 100;
 
-    std::cout << "\nOperation : " << sample_itr << " :: ";
+    std::cout << "\nOperation : " << operation_itr << " :: ";
     if(operation_sample < update_ratio) {
       WriteBlock(block_id);
     }
