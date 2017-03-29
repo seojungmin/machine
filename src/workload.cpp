@@ -23,9 +23,6 @@ size_t query_itr;
 
 double total_duration = 0;
 
-const size_t CLEAN_BLOCK = 100;
-const size_t DIRTY_BLOCK = 101;
-
 UNUSED_ATTRIBUTE static void WriteOutput(double duration) {
   // Convert to ms
   duration *= 1000;
@@ -64,43 +61,6 @@ void BootstrapMachine(const size_t& total_slots) {
 
 }
 
-bool LocateInDevice(Device device,
-                    const size_t& block_id){
-
-  // Check device cache
-  try{
-    device.cache.Get(block_id);
-    return true;
-  }
-  catch(const std::range_error& not_found){
-    // Nothing to do here!
-  }
-
-  return false;
-}
-
-DeviceType LocateInDevices(std::vector<Device> devices,
-                           const size_t& block_id){
-
-  for(auto device : devices){
-    auto found = LocateInDevice(device, block_id);
-    if(found == true){
-      return device.device_type;
-    }
-  }
-
-  return DeviceType::DEVICE_TYPE_INVALID;
-}
-
-bool DeviceExists(const DeviceType& device_type){
-  for(auto device : state.memory_devices){
-    if(device.device_type == device_type){
-      return true;
-    }
-  }
-  return false;
-}
-
 DeviceType LocateInMemoryDevices(const size_t& block_id){
   return LocateInDevices(state.memory_devices, block_id);
 }
@@ -109,147 +69,43 @@ DeviceType LocateInStorageDevices(const size_t& block_id){
   return LocateInDevices(state.storage_devices, block_id);
 }
 
-size_t GetDeviceOffset(const DeviceType& device_type){
-
-  size_t device_itr = 0;
-  for(auto device : state.devices){
-    if(device.device_type == device_type){
-      return device_itr;
-    }
-    device_itr++;
-  }
-
-  std::cout << "Did not find device of type : " <<
-      DeviceTypeToString(device_type);
-  exit(EXIT_FAILURE);
-}
-
-void MoveVictim(DeviceType source,
-                const size_t& block_id,
-                const bool& is_clean);
-
-bool IsClean(const size_t& block_type){
-  if(block_type == CLEAN_BLOCK){
-    return true;
-  }
-  return false;
-}
-
-std::string PrintCleanStatus(bool is_clean){
-  if(is_clean == true){
-    return "CLEAN";
-  }
-  return "DIRTY";
-}
-
-void Copy(DeviceType destination,
-          DeviceType source,
-          const size_t& block_id){
-
-  if(destination == DeviceType::DEVICE_TYPE_INVALID){
-    exit(EXIT_FAILURE);
-  }
-
-  std::cout << DeviceTypeToString(source) << " ";
-  std::cout << "---> " << DeviceTypeToString(destination) << "\n";
-
-  // Write to destination device
-  auto device_offset = GetDeviceOffset(destination);
-  auto device_cache = state.devices[device_offset].cache;
-  auto victim = device_cache.Put(block_id, CLEAN_BLOCK);
-
-  total_duration += GetReadLatency(source);
-  total_duration += GetWriteLatency(destination);
-
-  // Move victim
-  auto victim_key = victim.block_id;
-  auto victim_block_type = victim.block_type;
-  MoveVictim(destination,
-             victim_key,
-             IsClean(victim_block_type));
-
-}
-
-DeviceType GetLowerDevice(DeviceType source){
-  DeviceType destination = DeviceType::DEVICE_TYPE_INVALID;
-  auto nvm_exists = DeviceExists(DeviceType::DEVICE_TYPE_NVM);
-
-  switch(source){
-    case DEVICE_TYPE_DRAM: {
-      if(nvm_exists == true) {
-        destination = DEVICE_TYPE_NVM;
-      }
-      else {
-        destination = DEVICE_TYPE_SSD;
-      }
-      break;
-    }
-
-    case DEVICE_TYPE_NVM: {
-      destination = DEVICE_TYPE_SSD;
-      break;
-    }
-
-    default:
-    case DEVICE_TYPE_INVALID:
-      exit(EXIT_FAILURE);
-  }
-
-  return destination;
-}
-
-void MoveVictim(DeviceType source,
-                const size_t& block_id,
-                const bool& is_clean){
-
-  bool victim_exists = (block_id != INVALID_KEY);
-  bool volatile_device = (source == DeviceType::DEVICE_TYPE_DRAM);
-  bool is_dirty = (is_clean == false);
-
-  // Check if we have a dirty victim in DRAM
-  if(victim_exists && volatile_device && is_dirty){
-    auto destination = GetLowerDevice(source);
-
-    DLOG(INFO) << "Move victim : " << block_id << " ";
-    DLOG(INFO) << PrintCleanStatus(is_clean) << " ";
-
-    // Copy to device
-    Copy(destination, source, block_id);
-  }
-
-}
-
 void BringBlockToMemory(const size_t& block_id){
 
   auto memory_device_type = LocateInMemoryDevices(block_id);
   auto storage_device_type = LocateInStorageDevices(block_id);
-  auto nvm_exists = DeviceExists(DeviceType::DEVICE_TYPE_NVM);
+  auto nvm_exists = DeviceExists(state.devices, DeviceType::DEVICE_TYPE_NVM);
 
   // Not found on DRAM & NVM
   if(memory_device_type == DeviceType::DEVICE_TYPE_INVALID){
     // Copy to NVM first if it exists in hierarchy
     if(nvm_exists == true) {
-      Copy(DeviceType::DEVICE_TYPE_NVM,
+      Copy(state.devices,
+           DeviceType::DEVICE_TYPE_NVM,
            storage_device_type,
-           block_id);
+           block_id,
+           total_duration);
     }
     else {
-      Copy(DeviceType::DEVICE_TYPE_DRAM,
+      Copy(state.devices,
+           DeviceType::DEVICE_TYPE_DRAM,
            storage_device_type,
-           block_id);
+           block_id,
+           total_duration);
     }
   }
 
   // NVM to DRAM migration
   memory_device_type = LocateInMemoryDevices(block_id);
   if(memory_device_type == DeviceType::DEVICE_TYPE_NVM){
-    auto dram_exists = DeviceExists(DeviceType::DEVICE_TYPE_DRAM);
+    auto dram_exists = DeviceExists(state.devices, DeviceType::DEVICE_TYPE_DRAM);
     bool migrate_to_dram = (rand() % state.migration_frequency == 0);
     if(dram_exists == true){
       if(migrate_to_dram == true){
-        Copy(DeviceType::DEVICE_TYPE_DRAM,
+        Copy(state.devices,
+             DeviceType::DEVICE_TYPE_DRAM,
              DeviceType::DEVICE_TYPE_NVM,
-             block_id);
+             block_id,
+             total_duration);
       }
     }
   }
@@ -259,24 +115,28 @@ void BringBlockToMemory(const size_t& block_id){
 void BringBlockToStorage(const size_t& block_id){
 
   auto memory_device_type = LocateInMemoryDevices(block_id);
-  auto nvm_exists = DeviceExists(DeviceType::DEVICE_TYPE_NVM);
+  auto nvm_exists = DeviceExists(state.devices, DeviceType::DEVICE_TYPE_NVM);
 
   // Check if it is on DRAM
   if(memory_device_type == DeviceType::DEVICE_TYPE_DRAM){
     // Copy to NVM first if it exists in hierarchy
     if(nvm_exists == true) {
-      Copy(DeviceType::DEVICE_TYPE_NVM,
+      Copy(state.devices,
+           DeviceType::DEVICE_TYPE_NVM,
            memory_device_type,
-           block_id);
+           block_id,
+           total_duration);
     }
     else {
-      Copy(DeviceType::DEVICE_TYPE_SSD,
+      Copy(state.devices,
+           DeviceType::DEVICE_TYPE_SSD,
            memory_device_type,
-           block_id);
+           block_id,
+           total_duration);
     }
 
     // Mark block as clean
-    auto device_offset = GetDeviceOffset(memory_device_type);
+    auto device_offset = GetDeviceOffset(state.devices, memory_device_type);
     auto device_cache = state.devices[device_offset].cache;
     auto victim = device_cache.Put(block_id, CLEAN_BLOCK);
     if(victim.block_id != INVALID_KEY){
@@ -311,7 +171,7 @@ void UpdateBlock(const size_t& block_id) {
   // Mark block as dirty
   auto memory_device_type = LocateInMemoryDevices(block_id);
   if(memory_device_type == DeviceType::DEVICE_TYPE_DRAM){
-    auto device_offset = GetDeviceOffset(memory_device_type);
+    auto device_offset = GetDeviceOffset(state.devices, memory_device_type);
     auto device_cache = state.devices[device_offset].cache;
     auto victim = device_cache.Put(block_id, DIRTY_BLOCK);
     if(victim.block_id != INVALID_KEY){
@@ -330,10 +190,10 @@ void FlushBlock(const size_t& block_id) {
   // Check if dirty in DRAM
   auto memory_device_type = LocateInMemoryDevices(block_id);
   if(memory_device_type == DeviceType::DEVICE_TYPE_DRAM){
-    auto device_offset = GetDeviceOffset(memory_device_type);
+    auto device_offset = GetDeviceOffset(state.devices, memory_device_type);
     auto device_cache = state.devices[device_offset].cache;
     auto block_status = device_cache.Get(block_id);
-    if(IsClean(block_status) == false){
+    if(block_status != CLEAN_BLOCK){
       BringBlockToStorage(block_id);
     }
   }

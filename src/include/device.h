@@ -6,6 +6,9 @@
 
 namespace machine {
 
+const size_t CLEAN_BLOCK = 100;
+const size_t DIRTY_BLOCK = 101;
+
 extern size_t scale_factor;
 
 size_t GetWriteLatency(DeviceType device_type);
@@ -44,6 +47,22 @@ struct Device {
   StorageCache cache;
 
 };
+
+
+void Copy(std::vector<Device>& devices,
+          DeviceType destination,
+          DeviceType source,
+          const size_t& block_id,
+          double& total_duration);
+
+DeviceType LocateInDevices(std::vector<Device> devices,
+                           const size_t& block_id);
+
+bool DeviceExists(std::vector<Device>& devices,
+                  const DeviceType& device_type);
+
+size_t GetDeviceOffset(std::vector<Device>& devices,
+                       const DeviceType& device_type);
 
 class DeviceFactory {
  public:
