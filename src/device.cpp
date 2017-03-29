@@ -32,9 +32,6 @@ size_t GetWriteLatency(DeviceType device_type){
     case DEVICE_TYPE_SSD:
       return ssd_write_latency;
 
-    case DEVICE_TYPE_HDD:
-      return hdd_write_latency;
-
     default:
     case DEVICE_TYPE_INVALID:
       exit(EXIT_FAILURE);
@@ -51,9 +48,6 @@ size_t GetReadLatency(DeviceType device_type){
 
     case DEVICE_TYPE_SSD:
       return ssd_read_latency;
-
-    case DEVICE_TYPE_HDD:
-      return hdd_read_latency;
 
     default:
     case DEVICE_TYPE_INVALID:
@@ -100,20 +94,6 @@ Device DeviceFactory::GetDevice(const DeviceType& device_type,
                     device_size,
                     ssd_read_latency,
                     ssd_write_latency
-      );
-    }
-
-    case DEVICE_TYPE_HDD: {
-      // Check for last device
-      auto device_size = hdd_device_size;
-      if(last_device_type == DEVICE_TYPE_HDD){
-        device_size = machine_size;
-      }
-      return Device(DEVICE_TYPE_HDD,
-                    caching_type,
-                    device_size,
-                    hdd_read_latency,
-                    hdd_write_latency
       );
     }
 

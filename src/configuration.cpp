@@ -36,7 +36,7 @@ static struct option opts[] = {
 };
 
 static void ValidateHierarchyType(const configuration &state) {
-  if (state.hierarchy_type < 1 || state.hierarchy_type > 4) {
+  if (state.hierarchy_type < 1 || state.hierarchy_type > 3) {
     printf("Invalid hierarchy_type :: %d\n", state.hierarchy_type);
     exit(EXIT_FAILURE);
   }
@@ -96,10 +96,6 @@ static void ConstructDeviceList(configuration &state){
                                                 state.caching_type,
                                                 state.machine_size,
                                                 last_device_type);
-  Device hdd_device = DeviceFactory::GetDevice(DEVICE_TYPE_HDD,
-                                                state.caching_type,
-                                                state.machine_size,
-                                                last_device_type);
 
   switch (state.hierarchy_type) {
     case HIERARCHY_TYPE_NVM: {
@@ -120,12 +116,6 @@ static void ConstructDeviceList(configuration &state){
          state.storage_devices = {nvm_device, ssd_device};
     }
     break;
-    case HIERARCHY_TYPE_DRAM_NVM_SSD_HDD: {
-         state.devices = {dram_device, nvm_device, ssd_device, hdd_device};
-         state.memory_devices = {dram_device, nvm_device};
-         state.storage_devices = {nvm_device, ssd_device, hdd_device};
-    }
-    break;
     default:
       break;
   }
@@ -137,11 +127,11 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
   // Default Values
   state.verbose = false;
 
-  state.hierarchy_type = HIERARCHY_TYPE_DRAM_NVM_SSD_HDD;
+  state.hierarchy_type = HIERARCHY_TYPE_DRAM_NVM_SSD;
   state.logging_type = LOGGING_TYPE_WBL;
   state.caching_type = CACHING_TYPE_FIFO;
   state.machine_size = 1000;
-  state.migration_frequency = 10;
+  state.migration_frequency = 3;
   state.operation_count = 1000;
 
   // Parse args

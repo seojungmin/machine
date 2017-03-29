@@ -30,8 +30,6 @@ std::string DeviceTypeToString(const DeviceType& device_type){
       return "NVM";
     case DEVICE_TYPE_SSD:
       return "SSD";
-    case DEVICE_TYPE_HDD:
-      return "HDD";
     default:
       return "INVALID";
   }
@@ -47,8 +45,6 @@ std::string HierarchyTypeToString(const HierarchyType& hierarchy_type){
       return "DRAM-NVM";
     case HIERARCHY_TYPE_DRAM_NVM_SSD:
       return "DRAM-NVM-SSD";
-    case HIERARCHY_TYPE_DRAM_NVM_SSD_HDD:
-      return "DRAM-NVM-SSD-HDD";
     default:
       return "INVALID";
   }
@@ -77,8 +73,6 @@ DeviceType GetLastDevice(const HierarchyType& hierarchy_type){
        return DeviceType::DEVICE_TYPE_NVM;
      case HIERARCHY_TYPE_DRAM_NVM_SSD:
        return DeviceType::DEVICE_TYPE_SSD;
-     case HIERARCHY_TYPE_DRAM_NVM_SSD_HDD:
-       return DeviceType::DEVICE_TYPE_HDD;
      default:
        return DeviceType::DEVICE_TYPE_INVALID;
    }

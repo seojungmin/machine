@@ -37,6 +37,8 @@ class Cache {
 
   const Value& Get(const Key& key, bool touch = true) const;
 
+  void Erase(const Key& key);
+
   size_t CurrentCapacity() const;
 
   void Print();
@@ -44,8 +46,6 @@ class Cache {
  protected:
 
   void Insert(const Key& key, const Value& value);
-
-  void Erase(const Key& key);
 
   void Update(const Key& key, const Value& value);
 

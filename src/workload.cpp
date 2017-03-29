@@ -142,70 +142,67 @@ std::string PrintCleanStatus(bool is_clean){
   return "DIRTY";
 }
 
-void Copy(DeviceType destination_device_type,
-          DeviceType source_device_type,
+void Copy(DeviceType destination,
+          DeviceType source,
           const size_t& block_id){
 
-  if(destination_device_type ==
-      DeviceType::DEVICE_TYPE_INVALID){
-    return;
+  if(destination == DeviceType::DEVICE_TYPE_INVALID){
+    exit(EXIT_FAILURE);
   }
 
+  std::cout << DeviceTypeToString(source) << " ";
+  std::cout << "---> " << DeviceTypeToString(destination) << "\n";
+
   // Write to destination device
-  auto device_offset = GetDeviceOffset(destination_device_type);
+  auto device_offset = GetDeviceOffset(destination);
   auto device_cache = state.devices[device_offset].cache;
   auto victim = device_cache.Put(block_id, CLEAN_BLOCK);
 
-  total_duration += GetWriteLatency(destination_device_type);
-  total_duration += GetReadLatency(source_device_type);
+  total_duration += GetWriteLatency(destination);
+  total_duration += GetReadLatency(source);
 
   // Move victim
   auto victim_key = victim.block_id;
   auto victim_block_type = victim.block_type;
-  MoveVictim(destination_device_type,
+  MoveVictim(destination,
              victim_key,
              IsClean(victim_block_type));
 
+}
+
+DeviceType GetLowerDevice(DeviceType source){
+  DeviceType destination = DeviceType::DEVICE_TYPE_INVALID;
+  switch(source){
+    case DEVICE_TYPE_DRAM:
+      destination = DEVICE_TYPE_NVM;
+      break;
+
+    case DEVICE_TYPE_NVM:
+      destination = DEVICE_TYPE_SSD;
+      break;
+
+    default:
+    case DEVICE_TYPE_INVALID:
+      exit(EXIT_FAILURE);
+  }
+
+  return destination;
 }
 
 void MoveVictim(DeviceType source,
                 const size_t& block_id,
                 const bool& is_clean){
 
-  // Skip moving it to durable storage if clean
-  if(is_clean == true){
-    return;
-  }
+  bool victim_exists = (block_id != INVALID_KEY);
+  bool volatile_device = (source == DeviceType::DEVICE_TYPE_DRAM);
+  bool is_dirty = (is_clean == false);
 
-  // Check if we have a victim and it is in DRAM
-  // It is also dirty
-  if(block_id != INVALID_KEY &&
-      source == DeviceType::DEVICE_TYPE_DRAM){
-
-    DeviceType destination = DeviceType::DEVICE_TYPE_INVALID;
-
-    switch(source){
-        case DEVICE_TYPE_DRAM:
-          destination = DEVICE_TYPE_NVM;
-          break;
-
-        case DEVICE_TYPE_NVM:
-          destination = DEVICE_TYPE_SSD;
-          break;
-
-        case DEVICE_TYPE_SSD:
-          destination = DEVICE_TYPE_HDD;
-          break;
-
-        default:
-        case DEVICE_TYPE_INVALID:
-          exit(EXIT_FAILURE);
-      }
+  // Check if we have a dirty victim in DRAM
+  if(victim_exists && volatile_device && is_dirty){
+    auto destination = GetLowerDevice(source);
 
     std::cout << "Move victim : " << block_id << " ";
     std::cout << PrintCleanStatus(is_clean) << " ";
-    std::cout << "Source : " << DeviceTypeToString(source) << " ";
-    std::cout << "Destination : " << DeviceTypeToString(destination) << "\n";
 
     // Copy to device
     Copy(destination, source, block_id);
@@ -218,11 +215,12 @@ void BringBlockToMemory(const size_t& block_id){
   auto memory_device_type = LocateInMemoryDevices(block_id);
   auto storage_device_type = LocateInStorageDevices(block_id);
   auto nvm_exists = NVMExists();
+  bool migrate_to_dram = (rand() % state.migration_frequency == 0);
 
   // Not found on DRAM & NVM
   if(memory_device_type == DeviceType::DEVICE_TYPE_INVALID){
     // Copy to NVM first if it exists in hierarchy
-    if(nvm_exists == true) {
+    if(nvm_exists == true && migrate_to_dram == false) {
       Copy(DeviceType::DEVICE_TYPE_NVM,
            storage_device_type,
            block_id);
@@ -236,6 +234,38 @@ void BringBlockToMemory(const size_t& block_id){
 
 }
 
+void BringBlockToStorage(const size_t& block_id){
+
+  auto memory_device_type = LocateInMemoryDevices(block_id);
+  auto nvm_exists = NVMExists();
+
+  // Check if it is on DRAM
+  if(memory_device_type == DeviceType::DEVICE_TYPE_DRAM){
+    // Copy to NVM first if it exists in hierarchy
+    if(nvm_exists == true) {
+      Copy(DeviceType::DEVICE_TYPE_NVM,
+           memory_device_type,
+           block_id);
+    }
+    else {
+      Copy(DeviceType::DEVICE_TYPE_SSD,
+           memory_device_type,
+           block_id);
+    }
+
+    // Remove from DRAM
+    auto device_offset = GetDeviceOffset(memory_device_type);
+    auto device_cache = state.devices[device_offset].cache;
+    device_cache.Erase(block_id);
+
+    // Update duration
+    total_duration += GetWriteLatency(memory_device_type);
+  }
+
+
+}
+
+
 void ReadBlock(const size_t& block_id){
   std::cout << "READ  " << block_id << "\n";
 
@@ -245,25 +275,15 @@ void ReadBlock(const size_t& block_id){
   auto memory_device_type = LocateInMemoryDevices(block_id);
   total_duration += GetReadLatency(memory_device_type);
 
-  // Found on NVM (middle tier)
-  if(memory_device_type == DeviceType::DEVICE_TYPE_NVM){
-    if(rand() % state.migration_frequency == 0){
-      std::cout << "Migrate upwards to DRAM : " << block_id << "\n";
-      Copy(DeviceType::DEVICE_TYPE_DRAM,
-           DeviceType::DEVICE_TYPE_NVM,
-           block_id);
-    }
-  }
-
 }
 
-void WriteBlock(const size_t& block_id) {
-  std::cout << "WRITE " << block_id << "\n";
+void UpdateBlock(const size_t& block_id) {
+  std::cout << "UPDATE " << block_id << "\n";
 
   // Bring block to memory if needed
   BringBlockToMemory(block_id);
 
-  // Write to block on memory device
+  // Write block on memory device
   auto memory_device_type = LocateInMemoryDevices(block_id);
   if(memory_device_type == DeviceType::DEVICE_TYPE_DRAM){
     auto device_offset = GetDeviceOffset(memory_device_type);
@@ -274,7 +294,26 @@ void WriteBlock(const size_t& block_id) {
       exit(EXIT_FAILURE);
     }
   }
+
+  // Update duration
   total_duration += GetWriteLatency(memory_device_type);
+
+}
+
+void FlushBlock(const size_t& block_id) {
+  std::cout << "FLUSH " << block_id << "\n";
+
+  // Check if dirty in DRAM
+  auto memory_device_type = LocateInMemoryDevices(block_id);
+  if(memory_device_type == DeviceType::DEVICE_TYPE_DRAM){
+    auto device_offset = GetDeviceOffset(memory_device_type);
+    auto device_cache = state.devices[device_offset].cache;
+    auto block_status = device_cache.Get(block_id);
+    if(IsClean(block_status) == false){
+      // Bring block to storage
+      BringBlockToStorage(block_id);
+    }
+  }
 
 }
 
@@ -303,6 +342,7 @@ void MachineHelper() {
   double seed = 23;
   srand(seed);
   int update_ratio = 20;
+  int flush_ratio = 5;
 
   ZipfDistribution zipf_generator(upper_bound, theta);
   UniformDistribution uniform_generator(seed);
@@ -312,8 +352,12 @@ void MachineHelper() {
     auto operation_sample = rand() % 100;
 
     std::cout << "\nOperation : " << operation_itr << " :: ";
-    if(operation_sample < update_ratio) {
-      WriteBlock(block_id);
+    if(operation_sample < flush_ratio) {
+      UpdateBlock(block_id);
+      FlushBlock(block_id);
+    }
+    else if(operation_sample < update_ratio) {
+      UpdateBlock(block_id);
     }
     else {
       ReadBlock(block_id);

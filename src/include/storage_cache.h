@@ -19,6 +19,8 @@ class StorageCache {
 
   const int& Get(const int& key) const;
 
+  void Erase(const int& key);
+
   size_t CurrentCapacity() const;
 
   friend std::ostream& operator<< (std::ostream& stream,

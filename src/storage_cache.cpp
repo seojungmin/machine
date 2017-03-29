@@ -7,8 +7,8 @@ namespace machine {
 StorageCache::StorageCache(DeviceType device_type,
                            CachingType caching_type,
                            size_t capacity) :
-                               device_type_(device_type),
-                               caching_type_(caching_type){
+                                   device_type_(device_type),
+                                   caching_type_(caching_type){
 
   switch(caching_type_){
 
@@ -81,6 +81,33 @@ const int& StorageCache::Get(const int& key) const{
 
 }
 
+void StorageCache::Erase(const int& key) {
+
+  switch(caching_type_){
+
+    case CACHING_TYPE_FIFO:
+      fifo_cache->Erase(key);
+      break;
+
+    case CACHING_TYPE_LRU:
+      lru_cache->Erase(key);
+      break;
+
+    case CACHING_TYPE_LFU:
+      lfu_cache->Erase(key);
+      break;
+
+    case CACHING_TYPE_ARC:
+      arc_cache->Erase(key);
+      break;
+
+    case CACHING_TYPE_INVALID:
+    default:
+      exit(EXIT_FAILURE);
+  }
+
+}
+
 size_t StorageCache::CurrentCapacity() const{
 
   switch(caching_type_){
@@ -113,26 +140,26 @@ std::ostream& operator<< (std::ostream& stream,
 
   switch(cache.caching_type_){
 
-     case CACHING_TYPE_FIFO:
-       cache.fifo_cache->Print();
-       return stream;
+    case CACHING_TYPE_FIFO:
+      cache.fifo_cache->Print();
+      return stream;
 
-     case CACHING_TYPE_LRU:
-       cache.lru_cache->Print();
-       return stream;
+    case CACHING_TYPE_LRU:
+      cache.lru_cache->Print();
+      return stream;
 
-     case CACHING_TYPE_LFU:
-       cache.lfu_cache->Print();
-       return stream;
+    case CACHING_TYPE_LFU:
+      cache.lfu_cache->Print();
+      return stream;
 
-     case CACHING_TYPE_ARC:
-       cache.arc_cache->Print();
-       return stream;
+    case CACHING_TYPE_ARC:
+      cache.arc_cache->Print();
+      return stream;
 
-     case CACHING_TYPE_INVALID:
-     default:
-       exit(EXIT_FAILURE);
-   }
+    case CACHING_TYPE_INVALID:
+    default:
+      exit(EXIT_FAILURE);
+  }
 
 }
 
