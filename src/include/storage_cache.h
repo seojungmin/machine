@@ -17,7 +17,7 @@ class StorageCache {
 
   Block Put(const int& key, const int& value);
 
-  const int& Get(const int& key) const;
+  const int& Get(const int& key, bool touch = true) const;
 
   void Erase(const int& key);
 

@@ -83,6 +83,7 @@ void BringBlockToMemory(const size_t& block_id){
            DeviceType::DEVICE_TYPE_NVM,
            storage_device_type,
            block_id,
+           CLEAN_BLOCK,
            total_duration);
     }
     else {
@@ -90,6 +91,7 @@ void BringBlockToMemory(const size_t& block_id){
            DeviceType::DEVICE_TYPE_DRAM,
            storage_device_type,
            block_id,
+           CLEAN_BLOCK,
            total_duration);
     }
   }
@@ -105,6 +107,7 @@ void BringBlockToMemory(const size_t& block_id){
              DeviceType::DEVICE_TYPE_DRAM,
              DeviceType::DEVICE_TYPE_NVM,
              block_id,
+             CLEAN_BLOCK,
              total_duration);
       }
     }
@@ -112,10 +115,17 @@ void BringBlockToMemory(const size_t& block_id){
 
 }
 
-void BringBlockToStorage(const size_t& block_id){
+void BringBlockToStorage(const size_t& block_id,
+                         const size_t& block_status){
 
   auto memory_device_type = LocateInMemoryDevices(block_id);
   auto nvm_exists = DeviceExists(state.devices, DeviceType::DEVICE_TYPE_NVM);
+  auto last_device_type = state.devices.back().device_type;
+  auto nvm_last = (last_device_type == DeviceType::DEVICE_TYPE_NVM);
+  auto nvm_status = block_status;
+  if(nvm_last == true){
+    nvm_status = CLEAN_BLOCK;
+  }
 
   // Check if it is on DRAM
   if(memory_device_type == DeviceType::DEVICE_TYPE_DRAM){
@@ -125,6 +135,7 @@ void BringBlockToStorage(const size_t& block_id){
            DeviceType::DEVICE_TYPE_NVM,
            memory_device_type,
            block_id,
+           nvm_status,
            total_duration);
     }
     else {
@@ -132,6 +143,7 @@ void BringBlockToStorage(const size_t& block_id){
            DeviceType::DEVICE_TYPE_SSD,
            memory_device_type,
            block_id,
+           CLEAN_BLOCK,
            total_duration);
     }
 
@@ -184,6 +196,35 @@ void UpdateBlock(const size_t& block_id) {
 
 }
 
+void WriteBlock(size_t& block_id) {
+  std::cout << "WRITE " << block_id << "\n";
+
+  auto dram_exists = DeviceExists(state.devices, DeviceType::DEVICE_TYPE_DRAM);
+
+  // Mark block as dirty if written to DRAM
+  if(dram_exists){
+    Copy(state.devices,
+         DeviceType::DEVICE_TYPE_DRAM,
+         DeviceType::DEVICE_TYPE_INVALID,
+         block_id,
+         DIRTY_BLOCK,
+         total_duration);
+  }
+  // Mark block as clean if written to NVM
+  else {
+    Copy(state.devices,
+         DeviceType::DEVICE_TYPE_NVM,
+         DeviceType::DEVICE_TYPE_INVALID,
+         block_id,
+         CLEAN_BLOCK,
+         total_duration);
+  }
+
+  // Update write block id
+  block_id++;
+
+}
+
 void FlushBlock(const size_t& block_id) {
   std::cout << "FLUSH " << block_id << "\n";
 
@@ -194,7 +235,7 @@ void FlushBlock(const size_t& block_id) {
     auto device_cache = state.devices[device_offset].cache;
     auto block_status = device_cache.Get(block_id);
     if(block_status != CLEAN_BLOCK){
-      BringBlockToStorage(block_id);
+      BringBlockToStorage(block_id, block_status);
     }
   }
 
@@ -205,8 +246,7 @@ void MachineHelper() {
   // Run workload
 
   // Determine size of last device
-  auto last_device = state.devices.back();
-  size_t total_slots = last_device.device_size;
+  size_t total_slots = state.machine_size;
   std::cout << "Total slots : " << total_slots << "\n";
 
   // Reinit duration
@@ -224,18 +264,23 @@ void MachineHelper() {
   size_t operation_itr;
   double seed = 23;
   srand(seed);
-  int update_ratio = 20;
-  int flush_ratio = 5;
+  int update_ratio = 40;
+  int flush_ratio = 20;
+  int write_ratio = 15;
 
   ZipfDistribution zipf_generator(upper_bound, theta);
   UniformDistribution uniform_generator(seed);
+  size_t current_block_id = total_slots;
 
   for(operation_itr = 0; operation_itr < operation_count; operation_itr++){
     auto block_id = zipf_generator.GetNextNumber();
     auto operation_sample = rand() % 100;
 
     DLOG(INFO) << "\nOperation : " << operation_itr << " :: ";
-    if(operation_sample < flush_ratio) {
+    if(operation_sample < write_ratio) {
+      WriteBlock(current_block_id);
+    }
+    else if(operation_sample < flush_ratio) {
       UpdateBlock(block_id);
       FlushBlock(block_id);
     }

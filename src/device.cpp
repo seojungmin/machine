@@ -25,7 +25,7 @@ size_t hdd_write_latency = 50;
 
 size_t GetWriteLatency(DeviceType device_type){
 
-  DLOG(INFO) << "WRITE :: " << DeviceTypeToString(device_type) << "\n";
+  LOG(INFO) << "WRITE :: " << DeviceTypeToString(device_type) << "\n";
 
   switch(device_type){
     case DEVICE_TYPE_DRAM:
@@ -37,15 +37,17 @@ size_t GetWriteLatency(DeviceType device_type){
     case DEVICE_TYPE_SSD:
       return ssd_write_latency;
 
-    default:
     case DEVICE_TYPE_INVALID:
+      return 0;
+
+    default:
       exit(EXIT_FAILURE);
   }
 }
 
 size_t GetReadLatency(DeviceType device_type){
 
-  DLOG(INFO) << "READ :: " << DeviceTypeToString(device_type) << "\n";
+  LOG(INFO) << "READ :: " << DeviceTypeToString(device_type) << "\n";
 
   switch(device_type){
     case DEVICE_TYPE_DRAM:
@@ -57,8 +59,10 @@ size_t GetReadLatency(DeviceType device_type){
     case DEVICE_TYPE_SSD:
       return ssd_read_latency;
 
-    default:
     case DEVICE_TYPE_INVALID:
+      return 0;
+
+    default:
       exit(EXIT_FAILURE);
   }
 }
@@ -154,42 +158,50 @@ DeviceType GetLowerDevice(std::vector<Device>& devices,
   return destination;
 }
 
+std::string CleanStatus(const size_t& block_status){
+  if(block_status == CLEAN_BLOCK){
+    return "CLEAN";
+  }
+  else{
+    return "DIRTY";
+  }
+}
+
 // COPY + MOVE VICTIM
 
 void MoveVictim(std::vector<Device>& devices,
                 DeviceType source,
                 const size_t& block_id,
-                const bool& is_clean,
+                const size_t& block_status,
                 double& total_duration);
 
 void Copy(std::vector<Device>& devices,
           DeviceType destination,
           DeviceType source,
           const size_t& block_id,
+          const size_t& block_status,
           double& total_duration){
 
-  if(destination == DeviceType::DEVICE_TYPE_INVALID){
-    exit(EXIT_FAILURE);
-  }
-
+  std::cout << "COPY : " << block_id << " ";
   std::cout << DeviceTypeToString(source) << " ";
-  std::cout << "---> " << DeviceTypeToString(destination) << "\n";
+  std::cout << "---> " << DeviceTypeToString(destination) << " ";
+  std::cout << CleanStatus(block_status) << "\n";
 
   // Write to destination device
   auto device_offset = GetDeviceOffset(devices, destination);
   auto device_cache = devices[device_offset].cache;
-  auto victim = device_cache.Put(block_id, CLEAN_BLOCK);
+  auto victim = device_cache.Put(block_id, block_status);
 
   total_duration += GetReadLatency(source);
   total_duration += GetWriteLatency(destination);
 
   // Move victim
   auto victim_key = victim.block_id;
-  auto victim_block_type = victim.block_type;
+  auto victim_status = victim.block_type;
   MoveVictim(devices,
              destination,
              victim_key,
-             (victim_block_type == CLEAN_BLOCK),
+             victim_status,
              total_duration);
 
 }
@@ -197,21 +209,31 @@ void Copy(std::vector<Device>& devices,
 void MoveVictim(std::vector<Device>& devices,
                 DeviceType source,
                 const size_t& block_id,
-                const bool& is_clean,
+                const size_t& block_status,
                 double& total_duration){
 
   bool victim_exists = (block_id != INVALID_KEY);
-  bool volatile_device = (source == DeviceType::DEVICE_TYPE_DRAM);
-  bool is_dirty = (is_clean == false);
+  bool memory_device = (source == DeviceType::DEVICE_TYPE_DRAM ||
+      source == DeviceType::DEVICE_TYPE_NVM);
+  bool is_dirty = (block_status == DIRTY_BLOCK);
+
+  if(victim_exists == true) {
+    DLOG(INFO) << "Move victim   : " << block_id << "\n";
+    DLOG(INFO) << "Memory device : " << memory_device << "\n";
+    DLOG(INFO) << CleanStatus(block_status) << "\n";
+  }
 
   // Check if we have a dirty victim in DRAM
-  if(victim_exists && volatile_device && is_dirty){
+  if(victim_exists && memory_device && is_dirty){
     auto destination = GetLowerDevice(devices, source);
 
-    DLOG(INFO) << "Move victim : " << block_id << "\n";
-
     // Copy to device
-    Copy(devices, destination, source, block_id, total_duration);
+    Copy(devices,
+         destination,
+         source,
+         block_id,
+         block_status,
+         total_duration);
   }
 
 }
@@ -236,7 +258,7 @@ Device DeviceFactory::GetDevice(const DeviceType& device_type,
       // Check for last device
       auto device_size = nvm_device_size;
       if(last_device_type == DEVICE_TYPE_NVM){
-        device_size = machine_size;
+        device_size = machine_size * 1024;
       }
       return Device(DEVICE_TYPE_NVM,
                     caching_type,
@@ -250,7 +272,7 @@ Device DeviceFactory::GetDevice(const DeviceType& device_type,
       // Check for last device
       auto device_size = ssd_device_size;
       if(last_device_type == DEVICE_TYPE_SSD){
-        device_size = machine_size;
+        device_size = machine_size * 1024;
       }
       return Device(DEVICE_TYPE_SSD,
                     caching_type,

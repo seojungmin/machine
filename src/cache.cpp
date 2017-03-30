@@ -133,8 +133,12 @@ void CACHE_TEMPLATE_TYPE::Print() const {
 
   std::cout << "SIZE: " << cache_items_map.size() << "\n";
 
+  size_t block_itr = 0;
   for(auto& cache_item : cache_items_map){
     std::cout << cache_item.first << " ";
+    if(block_itr++ > 100){
+      break;
+    }
   }
 
   std::cout << "\n-------------------------------\n";

@@ -58,21 +58,21 @@ Block StorageCache::Put(const int& key, const int& value){
 
 }
 
-const int& StorageCache::Get(const int& key) const{
+const int& StorageCache::Get(const int& key, bool touch) const{
 
   switch(caching_type_){
 
     case CACHING_TYPE_FIFO:
-      return fifo_cache->Get(key);
+      return fifo_cache->Get(key, touch);
 
     case CACHING_TYPE_LRU:
-      return lru_cache->Get(key);
+      return lru_cache->Get(key, touch);
 
     case CACHING_TYPE_LFU:
-      return lfu_cache->Get(key);
+      return lfu_cache->Get(key, touch);
 
     case CACHING_TYPE_ARC:
-      return arc_cache->Get(key);
+      return arc_cache->Get(key, touch);
 
     case CACHING_TYPE_INVALID:
     default:

@@ -53,6 +53,7 @@ void Copy(std::vector<Device>& devices,
           DeviceType destination,
           DeviceType source,
           const size_t& block_id,
+          const size_t& block_status,
           double& total_duration);
 
 DeviceType LocateInDevices(std::vector<Device> devices,
