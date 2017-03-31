@@ -5,6 +5,7 @@
 
 #include "configuration.h"
 #include "workload.h"
+#include "device.h"
 
 namespace machine {
 
@@ -24,6 +25,8 @@ int main(int argc, char **argv) {
 
   // Initialize Google's logging library.
   google::InitGoogleLogging(argv[0]);
+
+  machine::BootstrapDeviceMetrics();
 
   machine::ParseArguments(
       argc, argv, machine::state);

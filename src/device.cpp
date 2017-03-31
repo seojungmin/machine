@@ -7,20 +7,35 @@ namespace machine {
 
 size_t scale_factor = 1;
 
-size_t dram_device_size = 4 * scale_factor;
-size_t nvm_device_size = 32 * scale_factor;
-size_t ssd_device_size = 128 * scale_factor;
-size_t hdd_device_size = 1024 * scale_factor;
+std::map<DeviceType, size_t> device_size;
+std::map<DeviceType, size_t> seq_read_latency;
+std::map<DeviceType, size_t> seq_write_latency;
+std::map<DeviceType, size_t> rnd_read_latency;
+std::map<DeviceType, size_t> rnd_write_latency;
 
-size_t dram_read_latency = 1;
-size_t nvm_read_latency = 5;
-size_t ssd_read_latency = 10;
-size_t hdd_read_latency = 50;
+void BootstrapDeviceMetrics(){
 
-size_t dram_write_latency = 1;
-size_t nvm_write_latency = 10;
-size_t ssd_write_latency = 20;
-size_t hdd_write_latency = 50;
+  device_size[DEVICE_TYPE_DRAM] = 4 * scale_factor;
+  device_size[DEVICE_TYPE_NVM] = 32 * scale_factor;
+  device_size[DEVICE_TYPE_SSD] = 128 * scale_factor;
+
+  seq_read_latency[DEVICE_TYPE_DRAM] = 1;
+  seq_read_latency[DEVICE_TYPE_NVM] = 5;
+  seq_read_latency[DEVICE_TYPE_SSD] = 10;
+
+  seq_write_latency[DEVICE_TYPE_DRAM] = 1;
+  seq_write_latency[DEVICE_TYPE_NVM] = 10;
+  seq_write_latency[DEVICE_TYPE_SSD] = 20;
+
+  rnd_read_latency[DEVICE_TYPE_DRAM] = 1;
+  rnd_read_latency[DEVICE_TYPE_NVM] = 5;
+  rnd_read_latency[DEVICE_TYPE_SSD] = 10;
+
+  rnd_write_latency[DEVICE_TYPE_DRAM] = 1;
+  rnd_write_latency[DEVICE_TYPE_NVM] = 10;
+  rnd_write_latency[DEVICE_TYPE_SSD] = 20;
+
+}
 
 // GET READ & WRITE LATENCY
 
@@ -30,13 +45,9 @@ size_t GetWriteLatency(DeviceType device_type){
 
   switch(device_type){
     case DEVICE_TYPE_DRAM:
-      return dram_write_latency;
-
     case DEVICE_TYPE_NVM:
-      return nvm_write_latency;
-
     case DEVICE_TYPE_SSD:
-      return ssd_write_latency;
+      return seq_write_latency[device_type];
 
     case DEVICE_TYPE_INVALID:
       return 0;
@@ -52,13 +63,9 @@ size_t GetReadLatency(DeviceType device_type){
 
   switch(device_type){
     case DEVICE_TYPE_DRAM:
-      return dram_read_latency;
-
     case DEVICE_TYPE_NVM:
-      return nvm_read_latency;
-
     case DEVICE_TYPE_SSD:
-      return ssd_read_latency;
+      return seq_read_latency[device_type];
 
     case DEVICE_TYPE_INVALID:
       return 0;
@@ -257,38 +264,16 @@ Device DeviceFactory::GetDevice(const DeviceType& device_type,
 
   switch (device_type){
     case DEVICE_TYPE_DRAM:
-      return Device(DEVICE_TYPE_DRAM,
-                    caching_type,
-                    dram_device_size,
-                    dram_read_latency,
-                    dram_write_latency
-      );
-
-    case DEVICE_TYPE_NVM: {
-      // Check for last device
-      auto device_size = nvm_device_size;
-      if(last_device_type == DEVICE_TYPE_NVM){
-        device_size = machine_size * 1024;
-      }
-      return Device(DEVICE_TYPE_NVM,
-                    caching_type,
-                    device_size,
-                    nvm_read_latency,
-                    nvm_write_latency
-      );
-    }
-
+    case DEVICE_TYPE_NVM:
     case DEVICE_TYPE_SSD:  {
       // Check for last device
-      auto device_size = ssd_device_size;
-      if(last_device_type == DEVICE_TYPE_SSD){
-        device_size = machine_size * 1024;
+      auto size = device_size[device_type];
+      if(last_device_type == device_type){
+        size = machine_size * 1024;
       }
-      return Device(DEVICE_TYPE_SSD,
+      return Device(device_type,
                     caching_type,
-                    device_size,
-                    ssd_read_latency,
-                    ssd_write_latency
+                    size
       );
     }
 
