@@ -13,8 +13,6 @@
 
 namespace machine {
 
-#define INVALID_KEY INT32_MAX
-
 struct Block{
   size_t block_id;
   size_t block_type;

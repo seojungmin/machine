@@ -37,24 +37,42 @@ StorageCache::StorageCache(DeviceType device_type,
 
 Block StorageCache::Put(const int& key, const int& value){
 
+  Block victim;
+
   switch(caching_type_){
 
     case CACHING_TYPE_FIFO:
-      return fifo_cache->Put(key, value);
+      victim = fifo_cache->Put(key, value);
+      break;
 
     case CACHING_TYPE_LRU:
-      return lru_cache->Put(key, value);
+      victim = lru_cache->Put(key, value);
+      break;
 
     case CACHING_TYPE_LFU:
-      return lfu_cache->Put(key, value);
+      victim = lfu_cache->Put(key, value);
+      break;
 
     case CACHING_TYPE_ARC:
-      return arc_cache->Put(key, value);
+      victim = arc_cache->Put(key, value);
+      break;
 
     case CACHING_TYPE_INVALID:
     default:
       exit(EXIT_FAILURE);
   }
+
+  if(victim.block_id != INVALID_KEY){
+    if(victim.block_type != CLEAN_BLOCK &&
+        victim.block_type != DIRTY_BLOCK ){
+      LOG(INFO) << "Invalid block type : " << victim.block_type;
+      LOG(INFO) << DeviceTypeToString(device_type_);
+      LOG(INFO) << CachingTypeToString(caching_type_);
+      exit(EXIT_FAILURE);
+    }
+  }
+
+  return victim;
 
 }
 

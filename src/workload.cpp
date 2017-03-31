@@ -41,6 +41,17 @@ UNUSED_ATTRIBUTE static void WriteOutput(double duration) {
   out.flush();
 }
 
+size_t GetMachineSize(){
+
+  size_t machine_size = 0;
+  for(auto device: state.devices){
+    auto device_size = device.cache.CurrentCapacity();
+    machine_size += device_size;
+  }
+
+  return machine_size;
+}
+
 void PrintMachine(){
 
   std::cout << "\n+++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
@@ -295,9 +306,24 @@ void MachineHelper() {
     DLOG(INFO) << "Duration : " << total_duration << "\n";
     std::cout << "-------------------------";
 
+    // Get machine size
+    auto machine_size = GetMachineSize();
+    auto expected_size = current_block_id;
+    if(machine_size < expected_size || machine_size > 2 * expected_size){
+      LOG(INFO) << "Machine size  : " << machine_size;
+      LOG(INFO) << "Expected size : " << expected_size;
+      exit(EXIT_FAILURE);
+    }
+
   }
 
   std::cout << "Duration : " << total_duration << "\n";
+
+  // Get machine size
+  auto machine_size = GetMachineSize();
+  auto expected_size = current_block_id;
+  LOG(INFO) << "Machine size  : " << machine_size;
+  LOG(INFO) << "Expected size : " << expected_size;
 
   // Print machine caches
   PrintMachine();

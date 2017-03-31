@@ -60,6 +60,7 @@ TEST(ARCCache, CheckPointerMove) {
   EXPECT_THROW(cache.Get(1), std::range_error);
 }
 
+
 TEST(ARCCache, CheckPointerMoveT2) {
   size_t cache_capacity = 3;
   arc_cache_t<int, int> cache(cache_capacity);
@@ -68,16 +69,17 @@ TEST(ARCCache, CheckPointerMoveT2) {
   cache.Put(2, 2);
   cache.Put(3, 3);
 
-  cache.Put(2,  7);
-  cache.Put(3,  7);
+  cache.Put(3, 7);
+  cache.Put(3, 7);
 
   // T2 list is bigger now and key1 have lower reference count
-  cache.Put(5,  7);
+  cache.Put(1, 7);
 
   cache.Put(4, 4);
 
-  EXPECT_THROW(cache.Get(1), std::range_error);
+  EXPECT_THROW(cache.Get(2), std::range_error);
 }
+
 
 TEST(ARCCache, CheckPointerSaveB1) {
   size_t cache_capacity = 4;
@@ -87,12 +89,13 @@ TEST(ARCCache, CheckPointerSaveB1) {
   cache.Put(2, 2);
   cache.Put(3, 3);
   cache.Put(4, 4);
-  cache.Put(1, 3);
-  cache.Put(5, 5);
+  cache.Put(5, 3);
+  cache.Put(1, 5);
 
   //key1 is restored from B1 and key2 moved to B1 (out of cache)
   EXPECT_THROW(cache.Get(2), std::range_error);
 }
+
 
 TEST(ARCCache, CheckPointerSaveB2) {
   size_t cache_capacity = 4;
@@ -104,6 +107,8 @@ TEST(ARCCache, CheckPointerSaveB2) {
   cache.Put(4, 4);
 
   cache.Put(1,  7);
+  cache.Put(2,  7);
+  cache.Put(2,  7);
   cache.Put(3,  7);
   cache.Put(3,  7);
   cache.Put(4,  7);
@@ -113,12 +118,12 @@ TEST(ARCCache, CheckPointerSaveB2) {
   cache.Put(1, 3);
 
   //key1 is restored from B1 and key2 moved to B1 (out of cache)
-  EXPECT_THROW(cache.Get(2), std::range_error);
+  EXPECT_THROW(cache.Get(5), std::range_error);
 }
 
 TEST(ARCCache, KeepsAllValuesWithinCapacity) {
-  constexpr int CACHE_CAPACITY = 3;
-  const int TEST_RECORDS = 6;
+  constexpr int CACHE_CAPACITY = 5;
+  const int TEST_RECORDS = 10;
   arc_cache_t<int, int> cache(CACHE_CAPACITY);
 
   for (int i = 0; i < TEST_RECORDS; ++i) {

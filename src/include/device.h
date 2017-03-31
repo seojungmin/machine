@@ -6,9 +6,6 @@
 
 namespace machine {
 
-const size_t CLEAN_BLOCK = 100;
-const size_t DIRTY_BLOCK = 101;
-
 extern size_t scale_factor;
 
 size_t GetWriteLatency(DeviceType device_type);

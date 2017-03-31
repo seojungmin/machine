@@ -33,4 +33,10 @@ namespace machine {
 #define INVARIANT(expr) ((void)0)
 #endif /* CHECK_INVARIANTS */
 
+
+const size_t INVALID_KEY = INT32_MAX;
+
+const size_t CLEAN_BLOCK = 100;
+const size_t DIRTY_BLOCK = 101;
+
 }  // End machine namespace

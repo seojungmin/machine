@@ -36,7 +36,6 @@ class ARCCachePolicy : public ICachePolicy<Key> {
       size_t size_ratio = B2.size()/B1.size();
       size_t b_ratio = MAX(size_ratio, 1);
       p = std::min(capacity, p + b_ratio);
-      DLOG(INFO) << "P: " << p;
       Replace(key);
       DequeErase(B1, key);
       T2.push_front(key);
@@ -46,8 +45,9 @@ class ARCCachePolicy : public ICachePolicy<Key> {
       DLOG(INFO) << "B2 contains key";
       size_t size_ratio = B1.size()/B2.size();
       size_t b_ratio = MAX(size_ratio, 1);
-      p = MAX(0, p - b_ratio);
-      DLOG(INFO) << "P: " << p;
+      if(p >= b_ratio) {
+        p = MAX(0, p - b_ratio);
+      }
       Replace(key);
       DequeErase(B2, key);
       T2.push_front(key);
@@ -165,6 +165,11 @@ class ARCCachePolicy : public ICachePolicy<Key> {
     Print("T2",T2);
     Print("B2",B2);
 
+    if(p > capacity || p < 0){
+      LOG(INFO) << "p exceeds capacity \n";
+      exit(EXIT_FAILURE);
+    }
+
     if(T1.size() + B1.size() > capacity){
       LOG(INFO) << "L1 exceeds capacity \n";
       exit(EXIT_FAILURE);
@@ -184,7 +189,7 @@ class ARCCachePolicy : public ICachePolicy<Key> {
       str << entry << " ";
     }
     str << "\n";
-    LOG(INFO) << str.str();
+    DLOG(INFO) << str.str();
   }
 
   bool Contains(const std::deque<Key>& deque, const Key& key) const {

@@ -43,10 +43,7 @@ Block CACHE_TEMPLATE_TYPE::Put(const Key& key,
     if (CurrentCapacity() + 1 > capacity_) {
       victim_key = cache_policy_.Victim(key);
       DLOG(INFO) << "Victim: " << victim_key;
-      auto elem_it = LocateEntry(key);
-      if (elem_it != cache_items_map.end()) {
-        victim_value = Get(victim_key, false);
-      }
+      victim_value = Get(victim_key, false);
       Erase(victim_key);
     }
 
@@ -78,8 +75,6 @@ const Value& CACHE_TEMPLATE_TYPE::Get(const Key& key,
   operation_guard{cache_mutex_};
   auto elem_it = LocateEntry(key);
 
-  Print();
-
   if (elem_it == cache_items_map.end()) {
     throw std::range_error{"No such element in the cache"};
   }
@@ -95,7 +90,7 @@ CACHE_TEMPLATE_ARGUMENT
 size_t CACHE_TEMPLATE_TYPE::CurrentCapacity() const {
 
   operation_guard{cache_mutex_};
-  Print();
+
   return cache_items_map.size();
 }
 
@@ -141,7 +136,17 @@ void CACHE_TEMPLATE_TYPE::Print() const {
 
   size_t block_itr = 0;
   for(auto& cache_item : cache_items_map){
-    std::cout << cache_item.first << " ";
+    if(cache_item.second == CLEAN_BLOCK){
+      std::cout << cache_item.first << " ";
+    }
+    else if(cache_item.second == DIRTY_BLOCK){
+      std::cout << cache_item.first << "● ";
+    }
+    else {
+      LOG(INFO) << "Invalid block type : " << cache_item.second;
+      exit(EXIT_FAILURE);
+    }
+
     if(block_itr++ > 100){
       break;
     }

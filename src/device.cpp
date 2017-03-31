@@ -1,5 +1,6 @@
 // DEVICE SOURCE
 
+#include "macros.h"
 #include "device.h"
 
 namespace machine {
@@ -162,8 +163,12 @@ std::string CleanStatus(const size_t& block_status){
   if(block_status == CLEAN_BLOCK){
     return "CLEAN";
   }
-  else{
+  else if(block_status == DIRTY_BLOCK){
     return "DIRTY";
+  }
+  else {
+    DLOG(INFO) << "Invalid block type: " << block_status;
+    exit(EXIT_FAILURE);
   }
 }
 
@@ -189,8 +194,13 @@ void Copy(std::vector<Device>& devices,
 
   // Write to destination device
   auto device_offset = GetDeviceOffset(devices, destination);
+  auto last_device_type = devices.back().device_type;
   auto device_cache = devices[device_offset].cache;
-  auto victim = device_cache.Put(block_id, block_status);
+  auto final_block_status = block_status;
+  if(last_device_type == destination){
+    final_block_status = CLEAN_BLOCK;
+  }
+  auto victim = device_cache.Put(block_id, final_block_status);
 
   total_duration += GetReadLatency(source);
   total_duration += GetWriteLatency(destination);
