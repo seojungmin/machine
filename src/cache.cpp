@@ -40,8 +40,7 @@ Block CACHE_TEMPLATE_TYPE::Put(const Key& key,
   if (entry_location == cache_items_map.end()) {
 
     // add new element to the cache
-    size_t loop_itr = 0;
-    while (CurrentCapacity() + 1 > capacity_) {
+    if (CurrentCapacity() + 1 > capacity_) {
       victim_key = cache_policy_.Victim(key);
       DLOG(INFO) << "Victim: " << victim_key;
       auto elem_it = LocateEntry(key);
@@ -49,17 +48,14 @@ Block CACHE_TEMPLATE_TYPE::Put(const Key& key,
         victim_value = Get(victim_key, false);
       }
       Erase(victim_key);
-
-      if(loop_itr++ >= 2){
-        exit(EXIT_FAILURE);
-      }
-    }
-
-    if (CurrentCapacity() + 1 > capacity_) {
-      exit(EXIT_FAILURE);
     }
 
     Insert(key, value);
+
+    if (CurrentCapacity() > capacity_) {
+      LOG(INFO) << "Capacity exceeded";
+      exit(EXIT_FAILURE);
+    }
 
   }
   else {
@@ -82,6 +78,8 @@ const Value& CACHE_TEMPLATE_TYPE::Get(const Key& key,
   operation_guard{cache_mutex_};
   auto elem_it = LocateEntry(key);
 
+  Print();
+
   if (elem_it == cache_items_map.end()) {
     throw std::range_error{"No such element in the cache"};
   }
@@ -97,7 +95,7 @@ CACHE_TEMPLATE_ARGUMENT
 size_t CACHE_TEMPLATE_TYPE::CurrentCapacity() const {
 
   operation_guard{cache_mutex_};
-
+  Print();
   return cache_items_map.size();
 }
 

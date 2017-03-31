@@ -4,7 +4,6 @@
 
 #include <deque>
 #include <vector>
-#include <map>
 #include <algorithm>
 
 #include <glog/logging.h>
@@ -32,49 +31,60 @@ class ARCCachePolicy : public ICachePolicy<Key> {
 
     DLOG(INFO) << "ARC INSERT : " << key << "\n";
 
-    if(Contains(key_cache, key)){
-      return;
-    }
-
-    key_cache[key] = 1;
-
     if(Contains(B1, key)){
+      DLOG(INFO) << "B1 contains key";
       size_t size_ratio = B2.size()/B1.size();
       size_t b_ratio = MAX(size_ratio, 1);
       p = std::min(capacity, p + b_ratio);
-      Erase(key);
-      Erase(B1, key);
+      DLOG(INFO) << "P: " << p;
+      Replace(key);
+      DequeErase(B1, key);
       T2.push_front(key);
+      DLOG(INFO) << "Moved it to T2";
     }
     else if(Contains(B2, key)){
+      DLOG(INFO) << "B2 contains key";
       size_t size_ratio = B1.size()/B2.size();
       size_t b_ratio = MAX(size_ratio, 1);
       p = MAX(0, p - b_ratio);
-      Erase(key);
-      Erase(B2, key);
+      DLOG(INFO) << "P: " << p;
+      Replace(key);
+      DequeErase(B2, key);
       T2.push_front(key);
-    }
-    else if(T1.size() + B1.size() == capacity){
-      if(T1.size() < capacity){
-        B1.pop_back();
-        Erase(key);
-      }
-      else {
-        Erase(key_cache,T1.back());
-        T1.pop_back();
-      }
+      DLOG(INFO) << "Moved it to T2";
     }
     else {
-      auto total = T1.size() + T2.size() + B1.size() + B2.size();
-      if(total >= capacity){
-        if(total == 2 * capacity){
-          B2.pop_back();
+      DLOG(INFO) << "Miss in L1 and L2";
+
+      auto l1 = T1.size() + B1.size();
+      auto l1_plus_l2 = T1.size() + T2.size() + B1.size() + B2.size();
+
+      if(l1 == capacity){
+        if(T1.size() < capacity){
+          B1.pop_back();
+          Replace(key);
+          DLOG(INFO) << "Make space in B1";
         }
-        Erase(key);
+        else {
+          T1.pop_back();
+          DLOG(INFO) << "Make space in T1";
+        }
       }
+      else if(l1 < capacity && l1_plus_l2 >= capacity) {
+        if(l1_plus_l2 == 2 * capacity){
+          B2.pop_back();
+          DLOG(INFO) << "Make space in B2";
+        }
+        Replace(key);
+      }
+
+      T1.push_front(key);
+      DLOG(INFO) << "Moved it to T1";
+
     }
 
-    T1.push_front(key);
+    Check();
+
   }
 
   void Touch(const Key& key) override {
@@ -82,19 +92,25 @@ class ARCCachePolicy : public ICachePolicy<Key> {
     DLOG(INFO) << "ARC TOUCH : " << key << "\n";
 
     if (Contains(T1, key)) {
-      Erase(T1, key);
+      DLOG(INFO) << "T1 contains key";
+      DequeErase(T1, key);
       T2.push_front(key);
+      DLOG(INFO) << "Moved it to T2";
     }
     else if (Contains(T2, key)){
-      Erase(T2, key);
+      DLOG(INFO) << "T2 contains key";
+      DequeErase(T2, key);
       T2.push_front(key);
+      DLOG(INFO) << "Moved it to T2";
     }
+
+    Check();
 
   }
 
-  void Erase(const Key& key) override {
+  void Replace(const Key& key) {
 
-    DLOG(INFO) << "ARC ERASE : " << key << "\n";
+    DLOG(INFO) << "ARC REPLACE : " << key << "\n";
 
     bool T1_not_empty = (T1.empty() == false);
     bool in_B2 = Contains(B2, key);
@@ -102,22 +118,30 @@ class ARCCachePolicy : public ICachePolicy<Key> {
     bool len_T1_gt_P = (T1.size() > p);
 
     if(T1_not_empty && ((in_B2 && len_T1_eq_P) || len_T1_gt_P)){
+      DLOG(INFO) << "Evict from T1 to B1";
       auto victim = T1.back();
       T1.pop_back();
       B1.push_front(victim);
     }
     else {
+      DLOG(INFO) << "Evict from T2 to B2";
       auto victim = T2.back();
       T2.pop_back();
       B2.push_front(victim);
     }
 
-    Erase(key_cache, key);
+    Check();
 
+  }
+
+  void Erase(UNUSED_ATTRIBUTE const Key& key) override {
+    // Nothing to do here!
   }
 
   // return a key of a displacement candidate
   const Key& Victim(const Key& key) const override {
+
+    DLOG(INFO) << "ARC VICTIM : " << key << "\n";
 
     bool T1_not_empty = (T1.empty() == false);
     bool in_B2 = Contains(B2, key);
@@ -133,26 +157,49 @@ class ARCCachePolicy : public ICachePolicy<Key> {
 
   }
 
+  void Check(){
+
+    // Print
+    Print("T1", T1);
+    Print("B1",B1);
+    Print("T2",T2);
+    Print("B2",B2);
+
+    if(T1.size() + B1.size() > capacity){
+      LOG(INFO) << "L1 exceeds capacity \n";
+      exit(EXIT_FAILURE);
+    }
+
+    if(T1.size() + B1.size() + T2.size() + B2.size() > 2 * capacity){
+      LOG(INFO) << "L1 + L2 exceeds 2 * capacity \n";
+      exit(EXIT_FAILURE);
+    }
+
+  }
+
+  void Print(std::string deque_name, const std::deque<Key>& deque){
+    std::stringstream str;
+    str << deque_name << " :: ";
+    for(auto entry : deque){
+      str << entry << " ";
+    }
+    str << "\n";
+    LOG(INFO) << str.str();
+  }
+
   bool Contains(const std::deque<Key>& deque, const Key& key) const {
-    if (std::find(deque.begin(), deque.end(), key) != deque.end()) {
+    auto location = std::find(deque.begin(), deque.end(), key);
+    if (location != deque.end()) {
       return true;
     }
     return false;
   }
 
-  bool Contains(const std::map<Key,int>& map, const Key& key) const {
-    if (map.count(key) != 0) {
-      return true;
+  void DequeErase(std::deque<Key>& deque, const Key& key){
+    auto location = std::find(deque.begin(), deque.end(), key);
+    if (location != deque.end()) {
+      deque.erase(location);
     }
-    return false;
-  }
-
-  void Erase(std::deque<Key>& deque, const Key& key){
-    std::remove(deque.begin(), deque.end(), key);
-  }
-
-  void Erase(std::map<Key,int>& map, const Key& key){
-    map.erase(key);
   }
 
  private:
@@ -162,8 +209,6 @@ class ARCCachePolicy : public ICachePolicy<Key> {
 
   std::deque<Key> T2;
   std::deque<Key> B2;
-
-  std::map<Key,int> key_cache;
 
   // capacity of cache
   size_t capacity;
