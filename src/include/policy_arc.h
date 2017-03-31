@@ -160,10 +160,10 @@ class ARCCachePolicy : public ICachePolicy<Key> {
   void Check(){
 
     // Print
-    Print("T1", T1);
-    Print("B1",B1);
-    Print("T2",T2);
-    Print("B2",B2);
+    //Print("T1", T1);
+    //Print("B1",B1);
+    //Print("T2",T2);
+    //Print("B2",B2);
 
     if(p > capacity || p < 0){
       LOG(INFO) << "p exceeds capacity \n";

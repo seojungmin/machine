@@ -161,10 +161,10 @@ DeviceType GetLowerDevice(std::vector<Device>& devices,
 
 std::string CleanStatus(const size_t& block_status){
   if(block_status == CLEAN_BLOCK){
-    return "CLEAN";
+    return "";
   }
   else if(block_status == DIRTY_BLOCK){
-    return "DIRTY";
+    return "●";
   }
   else {
     DLOG(INFO) << "Invalid block type: " << block_status;
@@ -187,10 +187,10 @@ void Copy(std::vector<Device>& devices,
           const size_t& block_status,
           double& total_duration){
 
-  std::cout << "COPY : " << block_id << " ";
-  std::cout << DeviceTypeToString(source) << " ";
-  std::cout << "---> " << DeviceTypeToString(destination) << " ";
-  std::cout << CleanStatus(block_status) << "\n";
+  std::cout << "COPY : " << block_id << " " << " " \
+      << DeviceTypeToString(source) << " " \
+      << "---> " << DeviceTypeToString(destination) << " " \
+      << CleanStatus(block_status) << "\n";
 
   // Write to destination device
   auto device_offset = GetDeviceOffset(devices, destination);

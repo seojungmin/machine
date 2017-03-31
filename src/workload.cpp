@@ -267,7 +267,7 @@ void MachineHelper() {
   BootstrapMachine(total_slots);
 
   // Print machine caches
-  PrintMachine();
+  //PrintMachine();
 
   size_t upper_bound = total_slots - 1;
   double theta = 0.5;
@@ -287,7 +287,7 @@ void MachineHelper() {
     auto block_id = zipf_generator.GetNextNumber();
     auto operation_sample = rand() % 100;
 
-    DLOG(INFO) << "\nOperation : " << operation_itr << " :: ";
+    std::cout << "\nOperation : " << operation_itr << " :: ";
     if(operation_sample < write_ratio) {
       WriteBlock(current_block_id);
     }
@@ -303,7 +303,7 @@ void MachineHelper() {
       ReadBlock(block_id);
     }
 
-    DLOG(INFO) << "Duration : " << total_duration << "\n";
+    LOG(INFO) << "Duration : " << total_duration << "\n";
     std::cout << "-------------------------";
 
     // Get machine size
@@ -322,8 +322,8 @@ void MachineHelper() {
   // Get machine size
   auto machine_size = GetMachineSize();
   auto expected_size = current_block_id;
-  LOG(INFO) << "Machine size  : " << machine_size;
-  LOG(INFO) << "Expected size : " << expected_size;
+  std::cout << "Machine size  : " << machine_size;
+  std::cout << "Expected size : " << expected_size;
 
   // Print machine caches
   PrintMachine();

@@ -136,17 +136,7 @@ void CACHE_TEMPLATE_TYPE::Print() const {
 
   size_t block_itr = 0;
   for(auto& cache_item : cache_items_map){
-    if(cache_item.second == CLEAN_BLOCK){
-      std::cout << cache_item.first << " ";
-    }
-    else if(cache_item.second == DIRTY_BLOCK){
-      std::cout << cache_item.first << "● ";
-    }
-    else {
-      LOG(INFO) << "Invalid block type : " << cache_item.second;
-      exit(EXIT_FAILURE);
-    }
-
+    std::cout << cache_item.first << CleanStatus(cache_item.second) << " ";
     if(block_itr++ > 100){
       break;
     }
