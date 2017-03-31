@@ -129,7 +129,7 @@ void BringBlockToMemory(const size_t& block_id){
 void BringBlockToStorage(const size_t& block_id,
                          const size_t& block_status){
 
-  auto memory_device_type = LocateInMemoryDevices(block_id);
+  auto source = LocateInMemoryDevices(block_id);
   auto nvm_exists = DeviceExists(state.devices, DeviceType::DEVICE_TYPE_NVM);
   auto last_device_type = state.devices.back().device_type;
   auto nvm_last = (last_device_type == DeviceType::DEVICE_TYPE_NVM);
@@ -139,12 +139,12 @@ void BringBlockToStorage(const size_t& block_id,
   }
 
   // Check if it is on DRAM
-  if(memory_device_type == DeviceType::DEVICE_TYPE_DRAM){
+  if(source == DeviceType::DEVICE_TYPE_DRAM){
     // Copy to NVM first if it exists in hierarchy
     if(nvm_exists == true) {
       Copy(state.devices,
            DeviceType::DEVICE_TYPE_NVM,
-           memory_device_type,
+           source,
            block_id,
            nvm_status,
            total_duration);
@@ -152,14 +152,14 @@ void BringBlockToStorage(const size_t& block_id,
     else {
       Copy(state.devices,
            DeviceType::DEVICE_TYPE_SSD,
-           memory_device_type,
+           source,
            block_id,
            CLEAN_BLOCK,
            total_duration);
     }
 
     // Mark block as clean
-    auto device_offset = GetDeviceOffset(state.devices, memory_device_type);
+    auto device_offset = GetDeviceOffset(state.devices, source);
     auto device_cache = state.devices[device_offset].cache;
     auto victim = device_cache.Put(block_id, CLEAN_BLOCK);
     if(victim.block_id != INVALID_KEY){
@@ -167,7 +167,7 @@ void BringBlockToStorage(const size_t& block_id,
     }
 
     // Update duration
-    total_duration += GetWriteLatency(memory_device_type);
+    total_duration += GetWriteLatency(state.devices, source, block_id);
   }
 
 }
@@ -180,8 +180,8 @@ void ReadBlock(const size_t& block_id){
   BringBlockToMemory(block_id);
 
   // Update duration
-  auto memory_device_type = LocateInMemoryDevices(block_id);
-  total_duration += GetReadLatency(memory_device_type);
+  auto source = LocateInMemoryDevices(block_id);
+  total_duration += GetReadLatency(state.devices, source, block_id);
 
 }
 
@@ -192,9 +192,9 @@ void UpdateBlock(const size_t& block_id) {
   BringBlockToMemory(block_id);
 
   // Mark block as dirty
-  auto memory_device_type = LocateInMemoryDevices(block_id);
-  if(memory_device_type == DeviceType::DEVICE_TYPE_DRAM){
-    auto device_offset = GetDeviceOffset(state.devices, memory_device_type);
+  auto destination = LocateInMemoryDevices(block_id);
+  if(destination == DeviceType::DEVICE_TYPE_DRAM){
+    auto device_offset = GetDeviceOffset(state.devices, destination);
     auto device_cache = state.devices[device_offset].cache;
     auto victim = device_cache.Put(block_id, DIRTY_BLOCK);
     if(victim.block_id != INVALID_KEY){
@@ -203,7 +203,7 @@ void UpdateBlock(const size_t& block_id) {
   }
 
   // Update duration
-  total_duration += GetWriteLatency(memory_device_type);
+  total_duration += GetWriteLatency(state.devices, destination, block_id);
 
 }
 
@@ -275,9 +275,10 @@ void MachineHelper() {
   size_t operation_itr;
   double seed = 23;
   srand(seed);
-  int update_ratio = 40;
-  int flush_ratio = 20;
-  int write_ratio = 15;
+  int update_ratio = 70;
+  int flush_ratio = 50;
+  int write_ratio = 45;
+  int seq_ratio = 30;
 
   ZipfDistribution zipf_generator(upper_bound, theta);
   UniformDistribution uniform_generator(seed);
@@ -288,7 +289,14 @@ void MachineHelper() {
     auto operation_sample = rand() % 100;
 
     std::cout << "\nOperation : " << operation_itr << " :: ";
-    if(operation_sample < write_ratio) {
+    if(operation_sample < seq_ratio) {
+      std::cout << "SCAN " << block_id << "\n";
+      ReadBlock(block_id);
+      ReadBlock((block_id + 1) % total_slots);
+      ReadBlock((block_id + 2) % total_slots);
+      ReadBlock((block_id + 3) % total_slots);
+    }
+    else if(operation_sample < write_ratio) {
       WriteBlock(current_block_id);
     }
     else if(operation_sample < flush_ratio) {
@@ -322,7 +330,7 @@ void MachineHelper() {
   // Get machine size
   auto machine_size = GetMachineSize();
   auto expected_size = current_block_id;
-  std::cout << "Machine size  : " << machine_size;
+  std::cout << "Machine size  : " << machine_size << "\n";
   std::cout << "Expected size : " << expected_size;
 
   // Print machine caches

@@ -8,10 +8,6 @@ namespace machine {
 
 extern size_t scale_factor;
 
-size_t GetWriteLatency(DeviceType device_type);
-
-size_t GetReadLatency(DeviceType device_type);
-
 struct Device {
 
 
@@ -34,6 +30,14 @@ struct Device {
   StorageCache cache;
 
 };
+
+size_t GetWriteLatency(std::vector<Device>& devices,
+                       DeviceType device_type,
+                       const size_t& block_id);
+
+size_t GetReadLatency(std::vector<Device>& devices,
+                      DeviceType device_type,
+                      const size_t& block_id);
 
 void BootstrapDeviceMetrics();
 

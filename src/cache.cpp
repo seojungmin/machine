@@ -9,6 +9,7 @@
 #include <type_traits>
 
 #include "cache.h"
+#include <stdlib.h>
 
 namespace machine {
 
@@ -144,6 +145,24 @@ void CACHE_TEMPLATE_TYPE::Print() const {
 
   std::cout << "\n-------------------------------\n";
 
+}
+
+CACHE_TEMPLATE_ARGUMENT
+bool CACHE_TEMPLATE_TYPE::IsSequential(const size_t& next) {
+
+  bool status = false;
+  size_t distance = abs(current_block_ - next);
+  DLOG(INFO) << "CURRENT: " << current_block_ << " NEXT: " << next << "\n";
+
+  if(distance == 1){
+    status = true;
+  }
+  else {
+    status = false;
+  }
+
+  current_block_ = next;
+  return status;
 }
 
 // Instantiations

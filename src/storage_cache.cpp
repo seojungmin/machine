@@ -181,7 +181,28 @@ std::ostream& operator<< (std::ostream& stream,
 
 }
 
+bool StorageCache::IsSequential(const size_t& next){
 
+  switch(caching_type_){
+
+    case CACHING_TYPE_FIFO:
+      return fifo_cache->IsSequential(next);
+
+    case CACHING_TYPE_LRU:
+      return lru_cache->IsSequential(next);
+
+    case CACHING_TYPE_LFU:
+      return lfu_cache->IsSequential(next);
+
+    case CACHING_TYPE_ARC:
+      return arc_cache->IsSequential(next);
+
+    case CACHING_TYPE_INVALID:
+    default:
+      exit(EXIT_FAILURE);
+  }
+
+}
 
 }  // End machine namespace
 

@@ -5,7 +5,7 @@
 
 namespace machine {
 
-size_t scale_factor = 1;
+size_t scale_factor = 8;
 
 std::map<DeviceType, size_t> device_size;
 std::map<DeviceType, size_t> seq_read_latency;
@@ -37,41 +37,82 @@ void BootstrapDeviceMetrics(){
 
 }
 
+bool IsSequential(std::vector<Device>& devices,
+                  const DeviceType& device_type,
+                  const size_t& next);
+
+std::string GetPattern(bool is_sequential){
+  if(is_sequential == true){
+    return "SEQ";
+  }
+  return "RND";
+}
+
 // GET READ & WRITE LATENCY
 
-size_t GetWriteLatency(DeviceType device_type){
+size_t GetWriteLatency(std::vector<Device>& devices,
+                       DeviceType device_type,
+                       const size_t& block_id){
 
   DLOG(INFO) << "WRITE :: " << DeviceTypeToString(device_type) << "\n";
+  bool is_sequential = IsSequential(devices, device_type, block_id);
+  if(is_sequential == true) {
+    std::cout << DeviceTypeToString(device_type) << " " \
+        << GetPattern(is_sequential) << "\n";
+  }
 
   switch(device_type){
     case DEVICE_TYPE_DRAM:
     case DEVICE_TYPE_NVM:
-    case DEVICE_TYPE_SSD:
-      return seq_write_latency[device_type];
+    case DEVICE_TYPE_SSD: {
+      if(is_sequential == true){
+        return seq_write_latency[device_type];
+      }
+      else {
+        return rnd_write_latency[device_type];
+      }
+    }
 
     case DEVICE_TYPE_INVALID:
       return 0;
 
-    default:
+    default: {
+      std::cout << "Get invalid device";
       exit(EXIT_FAILURE);
+    }
   }
 }
 
-size_t GetReadLatency(DeviceType device_type){
+size_t GetReadLatency(std::vector<Device>& devices,
+                      DeviceType device_type,
+                      const size_t& block_id){
 
   DLOG(INFO) << "READ :: " << DeviceTypeToString(device_type) << "\n";
+  bool is_sequential = IsSequential(devices, device_type, block_id);
+  if(is_sequential == true) {
+    std::cout << DeviceTypeToString(device_type) << " " \
+        << GetPattern(is_sequential) << "\n";
+  }
 
   switch(device_type){
     case DEVICE_TYPE_DRAM:
     case DEVICE_TYPE_NVM:
-    case DEVICE_TYPE_SSD:
-      return seq_read_latency[device_type];
+    case DEVICE_TYPE_SSD: {
+      if(is_sequential == true){
+        return seq_read_latency[device_type];
+      }
+      else {
+        return rnd_read_latency[device_type];
+      }
+    }
 
     case DEVICE_TYPE_INVALID:
       return 0;
 
-    default:
+    default: {
+      std::cout << "Get invalid device";
       exit(EXIT_FAILURE);
+    }
   }
 }
 
@@ -118,8 +159,7 @@ size_t GetDeviceOffset(std::vector<Device>& devices,
     device_itr++;
   }
 
-  std::cout << "Did not find device of type : " <<
-      DeviceTypeToString(device_type);
+  std::cout << "Get invalid device";
   exit(EXIT_FAILURE);
 }
 
@@ -130,6 +170,19 @@ bool DeviceExists(std::vector<Device>& devices,
   for(auto device : devices){
     if(device.device_type == device_type){
       return true;
+    }
+  }
+  return false;
+}
+
+// IS SEQUENTIAL?
+
+bool IsSequential(std::vector<Device>& devices,
+                  const DeviceType& device_type,
+                  const size_t& next){
+  for(auto device : devices){
+    if(device.device_type == device_type){
+      return device.cache.IsSequential(next);
     }
   }
   return false;
@@ -159,8 +212,10 @@ DeviceType GetLowerDevice(std::vector<Device>& devices,
     }
 
     default:
-    case DEVICE_TYPE_INVALID:
+    case DEVICE_TYPE_INVALID: {
+      std::cout << "Get invalid device";
       exit(EXIT_FAILURE);
+    }
   }
 
   return destination;
@@ -174,7 +229,7 @@ std::string CleanStatus(const size_t& block_status){
     return "●";
   }
   else {
-    DLOG(INFO) << "Invalid block type: " << block_status;
+    std::cout << "Invalid block type: " << block_status;
     exit(EXIT_FAILURE);
   }
 }
@@ -194,7 +249,7 @@ void Copy(std::vector<Device>& devices,
           const size_t& block_status,
           double& total_duration){
 
-  std::cout << "COPY : " << block_id << " " << " " \
+  DLOG(INFO) << "COPY : " << block_id << " " << " " \
       << DeviceTypeToString(source) << " " \
       << "---> " << DeviceTypeToString(destination) << " " \
       << CleanStatus(block_status) << "\n";
@@ -209,8 +264,8 @@ void Copy(std::vector<Device>& devices,
   }
   auto victim = device_cache.Put(block_id, final_block_status);
 
-  total_duration += GetReadLatency(source);
-  total_duration += GetWriteLatency(destination);
+  total_duration += GetReadLatency(devices, source, block_id);
+  total_duration += GetWriteLatency(devices, destination, block_id);
 
   // Move victim
   auto victim_key = victim.block_id;
@@ -277,8 +332,11 @@ Device DeviceFactory::GetDevice(const DeviceType& device_type,
       );
     }
 
-    default:
+    case DEVICE_TYPE_INVALID:
+    default: {
+      std::cout << "Get invalid device";
       exit(EXIT_FAILURE);
+    }
   }
 
 }

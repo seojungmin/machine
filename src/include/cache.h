@@ -3,6 +3,7 @@
 #pragma once
 
 #include <mutex>
+#include <cmath>
 
 #include "policy.h"
 
@@ -41,6 +42,8 @@ class Cache {
 
   void Print() const;
 
+  bool IsSequential(const size_t& next);
+
  protected:
 
   void Insert(const Key& key, const Value& value);
@@ -57,6 +60,8 @@ class Cache {
   mutable std::mutex cache_mutex_;
 
   size_t capacity_;
+
+  size_t current_block_;
 
 };
 

@@ -23,6 +23,8 @@ class StorageCache {
 
   size_t CurrentCapacity() const;
 
+  bool IsSequential(const size_t& next);
+
   friend std::ostream& operator<< (std::ostream& stream,
                                    const StorageCache& cache);
 
@@ -37,6 +39,9 @@ class StorageCache {
   Cache<int, int, LFUCachePolicy<int>>* lfu_cache = nullptr;
 
   Cache<int, int, ARCCachePolicy<int>>* arc_cache = nullptr;
+
+  // current block accessed
+  size_t current = 0;
 
 };
 
