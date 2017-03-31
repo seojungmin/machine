@@ -27,6 +27,8 @@ class LFUCachePolicy : public ICachePolicy<Key> {
 
     constexpr std::size_t INIT_VAL = 1;
 
+    DLOG(INFO) << "LFU INSERT: " << key << "\n";
+
     // all new value initialized with the frequency 1
     lfu_storage[key] = frequency_storage.emplace_hint(frequency_storage.cbegin(),
                                                       INIT_VAL,
@@ -35,6 +37,13 @@ class LFUCachePolicy : public ICachePolicy<Key> {
   }
 
   void Touch(const Key& key) override {
+
+    DLOG(INFO) << "LFU TOUCH: " << key << "\n";
+
+    if(lfu_storage.count(key) == 0){
+      DLOG(INFO) << "KEY NOT FOUND: " << key << "\n";
+      return;
+    }
 
     // get the previous frequency value of a key
     auto elem_for_update = lfu_storage[key];
@@ -50,6 +59,13 @@ class LFUCachePolicy : public ICachePolicy<Key> {
 
   void Erase(const Key& key) override {
 
+    DLOG(INFO) << "LFU ERASE : " << key << "\n";
+
+    if(lfu_storage.count(key) == 0){
+      DLOG(INFO) << "KEY NOT FOUND: " << key << "\n";
+      return;
+    }
+
     frequency_storage.erase(lfu_storage[key]);
     lfu_storage.erase(key);
 
@@ -59,8 +75,10 @@ class LFUCachePolicy : public ICachePolicy<Key> {
 
     // at the beginning of the frequency_storage we have the
     // least frequency used value
-    return frequency_storage.cbegin()->second;
+    auto& victim = frequency_storage.cbegin()->second;
+    DLOG(INFO) << "LFU VICTIM: " << victim << "\n";
 
+    return victim;
   }
 
  private:

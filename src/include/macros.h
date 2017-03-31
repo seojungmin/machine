@@ -5,6 +5,8 @@
 #include <assert.h>
 #include <stdexcept>
 
+#include <glog/logging.h>
+
 namespace machine {
 
 //===--------------------------------------------------------------------===//

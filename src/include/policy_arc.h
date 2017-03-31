@@ -32,11 +32,11 @@ class ARCCachePolicy : public ICachePolicy<Key> {
 
   void Insert(const Key& key) override {
 
-    DLOG(INFO) << "Insert : " << key << "\n";
+    DLOG(INFO) << "ARC INSERT : " << key << "\n";
 
     if (B1Entries.find(key) != B1Entries.end()) {
 
-      //Check, whether we are outsized
+      //Check whether we are outsized
       B1Entries.erase(key);
       B1.Erase(key);
 
@@ -65,11 +65,12 @@ class ARCCachePolicy : public ICachePolicy<Key> {
 
   void Touch(const Key& key) override {
 
-    DLOG(INFO) << "Touch : " << key << "\n";
+    DLOG(INFO) << "ARC TOUCH : " << key << "\n";
 
     if (T1Entries.find(key) != T1Entries.end()) {
 
       T1Entries.erase(key);
+      DLOG(INFO) << "ERASE FROM LRU : " << key;
       T1.Erase(key);
 
       T2Entries.insert(key);
@@ -84,9 +85,11 @@ class ARCCachePolicy : public ICachePolicy<Key> {
 
   void Erase(UNUSED_ATTRIBUTE const Key& key) override {
 
-    DLOG(INFO) << "Erase : " << key << "\n";
+    DLOG(INFO) << "ARC ERASE : " << key << "\n";
 
     if (T1Entries.find(key) != T1Entries.end()) {
+      DLOG(INFO) << "LRU FOUND : " << key;
+
       B1.Insert(key);
       B1Entries.insert(key);
 
@@ -97,8 +100,12 @@ class ARCCachePolicy : public ICachePolicy<Key> {
       }
 
       T1Entries.erase(key);
+      DLOG(INFO) << "ERASE FROM LRU : " << key;
       T1.Erase(key);
-    } else {
+    }
+    else if (T2Entries.find(key) != T2Entries.end()) {
+      DLOG(INFO) << "LFU FOUND : " << key;
+
       B2.Insert(key);
       B2Entries.insert(key);
 
@@ -109,6 +116,7 @@ class ARCCachePolicy : public ICachePolicy<Key> {
       }
 
       T2Entries.erase(key);
+      DLOG(INFO) << "ERASE FROM LFU : " << key;
       T2.Erase(key);
     }
 
@@ -118,8 +126,10 @@ class ARCCachePolicy : public ICachePolicy<Key> {
   const Key& Victim() const override {
 
     if (T1Entries.size() > T2Entries.size()) {
+      DLOG(INFO) << "ARC-LRU VICTIM : " << T1.Victim();
       return T1.Victim();
     } else {
+      DLOG(INFO) << "ARC-LFU VICTIM : " << T2.Victim();
       return T2.Victim();
     }
 

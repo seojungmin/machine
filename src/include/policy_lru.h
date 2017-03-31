@@ -23,6 +23,8 @@ class LRUCachePolicy : public ICachePolicy<Key> {
 
   void Insert(const Key& key) override {
 
+    DLOG(INFO) << "LRU INSERT: " << key << "\n";
+
     lru_queue.emplace_front(key);
     key_finder[key] = lru_queue.cbegin();
 
@@ -39,6 +41,8 @@ class LRUCachePolicy : public ICachePolicy<Key> {
 
   void Erase(UNUSED_ATTRIBUTE const Key& key) override {
 
+    DLOG(INFO) << "LRU ERASE: " << lru_queue.back() << "\n";
+
     // remove the least recently used element
     key_finder.erase(lru_queue.back());
     lru_queue.pop_back();
@@ -47,6 +51,8 @@ class LRUCachePolicy : public ICachePolicy<Key> {
 
   // return a key of a displacement candidate
   const Key& Victim() const override {
+
+    DLOG(INFO) << "LRU VICTIM: " << lru_queue.back() << "\n";
 
     return lru_queue.back();
 

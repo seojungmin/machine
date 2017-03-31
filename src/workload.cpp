@@ -233,7 +233,7 @@ void FlushBlock(const size_t& block_id) {
   if(memory_device_type == DeviceType::DEVICE_TYPE_DRAM){
     auto device_offset = GetDeviceOffset(state.devices, memory_device_type);
     auto device_cache = state.devices[device_offset].cache;
-    auto block_status = device_cache.Get(block_id);
+    auto block_status = device_cache.Get(block_id, true);
     if(block_status != CLEAN_BLOCK){
       BringBlockToStorage(block_id, block_status);
     }
@@ -282,6 +282,7 @@ void MachineHelper() {
     }
     else if(operation_sample < flush_ratio) {
       UpdateBlock(block_id);
+      std::cout << "-------------------------";
       FlushBlock(block_id);
     }
     else if(operation_sample < update_ratio) {
