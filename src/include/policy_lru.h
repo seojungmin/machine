@@ -50,7 +50,7 @@ class LRUCachePolicy : public ICachePolicy<Key> {
   }
 
   // return a key of a displacement candidate
-  const Key& Victim() const override {
+  const Key& Victim(UNUSED_ATTRIBUTE const Key& key) const override {
 
     DLOG(INFO) << "LRU VICTIM: " << lru_queue.back() << "\n";
 

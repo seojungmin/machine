@@ -42,7 +42,7 @@ Block CACHE_TEMPLATE_TYPE::Put(const Key& key,
     // add new element to the cache
     size_t loop_itr = 0;
     while (CurrentCapacity() + 1 > capacity_) {
-      victim_key = cache_policy_.Victim();
+      victim_key = cache_policy_.Victim(key);
       DLOG(INFO) << "Victim: " << victim_key;
       auto elem_it = LocateEntry(key);
       if (elem_it != cache_items_map.end()) {

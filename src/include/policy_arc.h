@@ -2,29 +2,27 @@
 
 #pragma once
 
-#include <set>
+#include <deque>
+#include <vector>
+#include <map>
+#include <algorithm>
 
 #include <glog/logging.h>
 
 #include "macros.h"
 #include "policy.h"
-#include "policy_lfu.h"
-#include "policy_lru.h"
 
 namespace machine {
+
+#define MAX(a,b) (((a)>(b))?(a):(b))
 
 template <typename Key>
 class ARCCachePolicy : public ICachePolicy<Key> {
  public:
-  using arc_iterator = typename std::list<Key>::const_iterator;
 
   ARCCachePolicy(const size_t& capacity)
-  : T1(LRUCachePolicy<Key>(capacity)),
-    B1(LRUCachePolicy<Key>(capacity)),
-    T2(LFUCachePolicy<Key>(capacity)),
-    B2(LFUCachePolicy<Key>(capacity)),
-    capacity(capacity) {
-
+ : capacity(capacity),
+   p(0) {
     // Nothing to do here!
   }
 
@@ -34,121 +32,144 @@ class ARCCachePolicy : public ICachePolicy<Key> {
 
     DLOG(INFO) << "ARC INSERT : " << key << "\n";
 
-    if (B1Entries.find(key) != B1Entries.end()) {
-
-      //Check whether we are outsized
-      B1Entries.erase(key);
-      B1.Erase(key);
-
-      T1Entries.insert(key);
-      T1.Insert(key);
-
+    if(Contains(key_cache, key)){
+      return;
     }
-    else if (B2Entries.find(key) != B2Entries.end()) {
 
-      B2.Erase(key);
-      B2Entries.erase(key);
+    key_cache[key] = 1;
 
-      T2Entries.insert(key);
-      T2.Insert(key);
-
+    if(Contains(B1, key)){
+      size_t size_ratio = B2.size()/B1.size();
+      size_t b_ratio = MAX(size_ratio, 1);
+      p = std::min(capacity, p + b_ratio);
+      Erase(key);
+      Erase(B1, key);
+      T2.push_front(key);
+    }
+    else if(Contains(B2, key)){
+      size_t size_ratio = B1.size()/B2.size();
+      size_t b_ratio = MAX(size_ratio, 1);
+      p = MAX(0, p - b_ratio);
+      Erase(key);
+      Erase(B2, key);
+      T2.push_front(key);
+    }
+    else if(T1.size() + B1.size() == capacity){
+      if(T1.size() < capacity){
+        B1.pop_back();
+        Erase(key);
+      }
+      else {
+        Erase(key_cache,T1.back());
+        T1.pop_back();
+      }
     }
     else {
-
-      //Completely new!
-      T1Entries.insert(key);
-      T1.Insert(key);
-
+      auto total = T1.size() + T2.size() + B1.size() + B2.size();
+      if(total >= capacity){
+        if(total == 2 * capacity){
+          B2.pop_back();
+        }
+        Erase(key);
+      }
     }
 
+    T1.push_front(key);
   }
 
   void Touch(const Key& key) override {
 
     DLOG(INFO) << "ARC TOUCH : " << key << "\n";
 
-    if (T1Entries.find(key) != T1Entries.end()) {
-
-      T1Entries.erase(key);
-      DLOG(INFO) << "ERASE FROM LRU : " << key;
-      T1.Erase(key);
-
-      T2Entries.insert(key);
-      T2.Insert(key);
-
+    if (Contains(T1, key)) {
+      Erase(T1, key);
+      T2.push_front(key);
     }
-    else {
-      T2.Touch(key);
+    else if (Contains(T2, key)){
+      Erase(T2, key);
+      T2.push_front(key);
     }
 
   }
 
-  void Erase(UNUSED_ATTRIBUTE const Key& key) override {
+  void Erase(const Key& key) override {
 
     DLOG(INFO) << "ARC ERASE : " << key << "\n";
 
-    if (T1Entries.find(key) != T1Entries.end()) {
-      DLOG(INFO) << "LRU FOUND : " << key;
+    bool T1_not_empty = (T1.empty() == false);
+    bool in_B2 = Contains(B2, key);
+    bool len_T1_eq_P = (T1.size() == p);
+    bool len_T1_gt_P = (T1.size() > p);
 
-      B1.Insert(key);
-      B1Entries.insert(key);
-
-      if (B1Entries.size() >= capacity/2) {
-        auto victim = B1.Victim();
-        B1.Erase(victim);
-        B1Entries.erase(victim);
-      }
-
-      T1Entries.erase(key);
-      DLOG(INFO) << "ERASE FROM LRU : " << key;
-      T1.Erase(key);
+    if(T1_not_empty && ((in_B2 && len_T1_eq_P) || len_T1_gt_P)){
+      auto victim = T1.back();
+      T1.pop_back();
+      B1.push_front(victim);
     }
-    else if (T2Entries.find(key) != T2Entries.end()) {
-      DLOG(INFO) << "LFU FOUND : " << key;
-
-      B2.Insert(key);
-      B2Entries.insert(key);
-
-      if (B2Entries.size() >= capacity/2) {
-        auto victim = B2.Victim();
-        B2.Erase(victim);
-        B2Entries.erase(victim);
-      }
-
-      T2Entries.erase(key);
-      DLOG(INFO) << "ERASE FROM LFU : " << key;
-      T2.Erase(key);
+    else {
+      auto victim = T2.back();
+      T2.pop_back();
+      B2.push_front(victim);
     }
+
+    Erase(key_cache, key);
 
   }
 
   // return a key of a displacement candidate
-  const Key& Victim() const override {
+  const Key& Victim(const Key& key) const override {
 
-    if (T1Entries.size() > T2Entries.size()) {
-      DLOG(INFO) << "ARC-LRU VICTIM : " << T1.Victim();
-      return T1.Victim();
-    } else {
-      DLOG(INFO) << "ARC-LFU VICTIM : " << T2.Victim();
-      return T2.Victim();
+    bool T1_not_empty = (T1.empty() == false);
+    bool in_B2 = Contains(B2, key);
+    bool len_T1_eq_P = (T1.size() == p);
+    bool len_T1_gt_P = (T1.size() > p);
+
+    if(T1_not_empty && ((in_B2 && len_T1_eq_P) || len_T1_gt_P)){
+      return T1.back();
+    }
+    else {
+      return T2.back();
     }
 
   }
 
+  bool Contains(const std::deque<Key>& deque, const Key& key) const {
+    if (std::find(deque.begin(), deque.end(), key) != deque.end()) {
+      return true;
+    }
+    return false;
+  }
+
+  bool Contains(const std::map<Key,int>& map, const Key& key) const {
+    if (map.count(key) != 0) {
+      return true;
+    }
+    return false;
+  }
+
+  void Erase(std::deque<Key>& deque, const Key& key){
+    std::remove(deque.begin(), deque.end(), key);
+  }
+
+  void Erase(std::map<Key,int>& map, const Key& key){
+    map.erase(key);
+  }
+
  private:
 
-  LRUCachePolicy<Key> T1;
-  std::set<Key> T1Entries;
-  LRUCachePolicy<Key> B1;
-  std::set<Key> B1Entries;
+  std::deque<Key> T1;
+  std::deque<Key> B1;
 
-  LFUCachePolicy<Key> T2;
-  std::set<Key> T2Entries;
-  LFUCachePolicy<Key> B2;
-  std::set<Key> B2Entries;
+  std::deque<Key> T2;
+  std::deque<Key> B2;
+
+  std::map<Key,int> key_cache;
 
   // capacity of cache
   size_t capacity;
+
+  // marker
+  size_t p;
 
 };
 

@@ -32,24 +32,6 @@ TEST(ARCCache, MissingValue) {
   EXPECT_THROW(cache.Get(1), std::range_error);
 }
 
-TEST(ARCCache, KeepsAllValuesWithinCapacity) {
-  constexpr int CACHE_CAPACITY = 50;
-  const int TEST_RECORDS = 100;
-  arc_cache_t<int, int> cache(CACHE_CAPACITY);
-
-  for (int i = 0; i < TEST_RECORDS; ++i) {
-    cache.Put(i, i);
-  }
-
-  for (int i = 0; i < TEST_RECORDS - CACHE_CAPACITY; ++i) {
-    EXPECT_THROW(cache.Get(i), std::range_error);
-  }
-
-  for (int i = TEST_RECORDS - CACHE_CAPACITY; i < TEST_RECORDS; ++i) {
-    EXPECT_EQ(i, cache.Get(i));
-  }
-}
-
 TEST(ARCCache, CheckVictim) {
   size_t cache_capacity = 3;
   arc_cache_t<int, int> cache(cache_capacity);
@@ -136,5 +118,22 @@ TEST(ARCCache, CheckPointerSaveB2) {
   EXPECT_THROW(cache.Get(2), std::range_error);
 }
 
+TEST(ARCCache, KeepsAllValuesWithinCapacity) {
+  constexpr int CACHE_CAPACITY = 50;
+  const int TEST_RECORDS = 100;
+  arc_cache_t<int, int> cache(CACHE_CAPACITY);
+
+  for (int i = 0; i < TEST_RECORDS; ++i) {
+    cache.Put(i, i);
+  }
+
+  for (int i = 0; i < TEST_RECORDS - CACHE_CAPACITY; ++i) {
+    EXPECT_THROW(cache.Get(i), std::range_error);
+  }
+
+  for (int i = TEST_RECORDS - CACHE_CAPACITY; i < TEST_RECORDS; ++i) {
+    EXPECT_EQ(i, cache.Get(i));
+  }
+}
 
 }  // End machine namespace

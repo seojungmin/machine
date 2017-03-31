@@ -24,7 +24,7 @@ class ICachePolicy {
   virtual void Erase(const Key& key) = 0;
 
   // return a key of a replacement candidate
-  virtual const Key& Victim() const = 0;
+  virtual const Key& Victim(const Key& key) const = 0;
 
 };
 
