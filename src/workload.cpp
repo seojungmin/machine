@@ -174,19 +174,6 @@ void BringBlockToStorage(const size_t& block_id,
 
 }
 
-
-void ReadBlock(const size_t& block_id){
-  std::cout << "READ  " << block_id << "\n";
-
-  // Bring block to memory if needed
-  BringBlockToMemory(block_id);
-
-  // Update duration
-  auto source = LocateInMemoryDevices(block_id);
-  total_duration += GetReadLatency(state.devices, source, block_id);
-
-}
-
 void WriteBlock(const size_t& block_id) {
 
   // Bring block to memory if needed
@@ -196,7 +183,7 @@ void WriteBlock(const size_t& block_id) {
 
   // CASE 1: New block
   if(destination == DeviceType::DEVICE_TYPE_INVALID){
-    std::cout << "WRITE " << block_id << "\n";
+    //std::cout << "WRITE " << block_id << "\n";
     auto dram_exists = DeviceExists(state.devices, DeviceType::DEVICE_TYPE_DRAM);
 
     // Mark block as dirty if written to DRAM
@@ -222,7 +209,7 @@ void WriteBlock(const size_t& block_id) {
   }
 
   // CASE 2: Existing block
-  std::cout << "UPDATE " << block_id << "\n";
+  //std::cout << "UPDATE " << block_id << "\n";
 
   // Mark block as dirty
   if(destination == DeviceType::DEVICE_TYPE_DRAM){
@@ -239,8 +226,25 @@ void WriteBlock(const size_t& block_id) {
 
 }
 
+void ReadBlock(const size_t& block_id){
+  //std::cout << "READ  " << block_id << "\n";
+
+  // Bring block to memory if needed
+  BringBlockToMemory(block_id);
+
+  // Update duration
+  auto source = LocateInMemoryDevices(block_id);
+  total_duration += GetReadLatency(state.devices, source, block_id);
+
+  if(source == DeviceType::DEVICE_TYPE_INVALID){
+    std::cout << "Could not read block : " << block_id << "\n";
+    exit(EXIT_FAILURE);
+  }
+
+}
+
 void FlushBlock(const size_t& block_id) {
-  std::cout << "FLUSH " << block_id << "\n";
+  //std::cout << "FLUSH " << block_id << "\n";
 
   // Check if dirty in DRAM
   auto memory_device_type = LocateInMemoryDevices(block_id);
@@ -263,79 +267,86 @@ void MachineHelper() {
   size_t total_slots = state.machine_size;
   std::cout << "Total slots : " << total_slots << "\n";
 
+  // Machine size
+  BootstrapMachine(total_slots);
+
   // Reinit duration
   total_duration = 0;
 
-  // Bootstrap
-  BootstrapMachine(total_slots);
+  // Go through trace file
+  std::unique_ptr<std::istream> input;
+  char operation_type;
+  size_t fork_number;
+  size_t block_number;
 
-  // Print machine caches
-  //PrintMachine();
+  if (state.file_name.empty()) {
+    return;
+  }
+  else {
+    std::cout << "Running trace " << state.file_name << "...\n";
+    input.reset(new std::ifstream(state.file_name.c_str()));
+  }
 
-  size_t upper_bound = total_slots - 1;
-  double theta = 0.5;
-  size_t operation_count = state.operation_count;
-  size_t operation_itr;
-  double seed = 23;
-  srand(seed);
-  int update_ratio = 70;
-  int flush_ratio = 50;
-  int write_ratio = 45;
-  int seq_ratio = 30;
+  size_t fragment_size = 4096;
+  char buffer[fragment_size];
 
-  ZipfDistribution zipf_generator(upper_bound, theta);
-  UniformDistribution uniform_generator(seed);
-  size_t current_block_id = total_slots;
+  size_t operation_itr = 0;
 
-  for(operation_itr = 0; operation_itr < operation_count; operation_itr++){
-    auto block_id = zipf_generator.GetNextNumber();
-    auto operation_sample = rand() % 100;
+  // Go over the input stream
+  while(!input->eof()){
+    operation_itr++;
 
-    std::cout << "\nOperation : " << operation_itr << " :: ";
-    if(operation_sample < seq_ratio) {
-      std::cout << "SCAN " << block_id << "\n";
-      ReadBlock(block_id);
-      ReadBlock((block_id + 1) % total_slots);
-      ReadBlock((block_id + 2) % total_slots);
-      ReadBlock((block_id + 3) % total_slots);
-    }
-    else if(operation_sample < write_ratio) {
-      WriteBlock(current_block_id);
-      current_block_id++;
-    }
-    else if(operation_sample < flush_ratio) {
-      WriteBlock(block_id);
-      std::cout << "-------------------------";
-      FlushBlock(block_id);
-    }
-    else if(operation_sample < update_ratio) {
-      WriteBlock(block_id);
-    }
-    else {
-      ReadBlock(block_id);
+    // Get a line from the input stream
+    input->getline(buffer, fragment_size);
+
+    // Check statement
+    sscanf(buffer, "%c%lu%lu",
+           &operation_type,
+           &fork_number,
+           &block_number);
+
+    auto global_block_number = fork_number * 10 + block_number;
+
+    if(global_block_number > state.machine_size){
+      std::cout << "Operation " << operation_itr << " :: " <<
+          operation_type << " " << global_block_number << " "
+          << fork_number << " " << block_number << "\n";
+      continue;
     }
 
-    LOG(INFO) << "Duration : " << total_duration << "\n";
-    std::cout << "-------------------------";
+    switch(operation_type){
+      case 'r':
+        ReadBlock(global_block_number);
+        break;
 
-    // Get machine size
-    auto machine_size = GetMachineSize();
-    auto expected_size = current_block_id;
-    if(machine_size < expected_size || machine_size > 2 * expected_size){
-      LOG(INFO) << "Machine size  : " << machine_size;
-      LOG(INFO) << "Expected size : " << expected_size;
-      exit(EXIT_FAILURE);
+      case 'w':
+        WriteBlock(global_block_number);
+        break;
+
+      case 'f':
+        FlushBlock(global_block_number);
+        break;
+
+      default:
+        std::cout << "Invalid operation type: " << operation_type << "\n";
+        break;
+    }
+
+    if(operation_itr % 1000 == 0){
+      std::cout << "Operation " << operation_itr << " :: " <<
+          operation_type << " " << global_block_number << " "
+          << fork_number << " " << block_number << "\n";
     }
 
   }
 
-  std::cout << "Duration : " << total_duration << "\n";
+  std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
+  std::cout << "Duration : " << total_duration/1000 << " (s) \n";
+  std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
 
   // Get machine size
   auto machine_size = GetMachineSize();
-  auto expected_size = current_block_id;
   std::cout << "Machine size  : " << machine_size << "\n";
-  std::cout << "Expected size : " << expected_size;
 
   // Print machine caches
   PrintMachine();

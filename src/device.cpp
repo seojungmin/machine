@@ -5,7 +5,7 @@
 
 namespace machine {
 
-size_t scale_factor = 8;
+size_t scale_factor = 100;
 
 std::map<DeviceType, size_t> device_size;
 std::map<DeviceType, size_t> seq_read_latency;
@@ -15,9 +15,9 @@ std::map<DeviceType, size_t> rnd_write_latency;
 
 void BootstrapDeviceMetrics(){
 
-  device_size[DEVICE_TYPE_DRAM] = 4 * scale_factor;
-  device_size[DEVICE_TYPE_NVM] = 32 * scale_factor;
-  device_size[DEVICE_TYPE_SSD] = 128 * scale_factor;
+  device_size[DEVICE_TYPE_DRAM] = 32 * scale_factor;
+  device_size[DEVICE_TYPE_NVM] = 256 * scale_factor;
+  device_size[DEVICE_TYPE_SSD] = 1024 * scale_factor;
 
   seq_read_latency[DEVICE_TYPE_DRAM] = 1;
   seq_read_latency[DEVICE_TYPE_NVM] = 5;
@@ -56,10 +56,9 @@ size_t GetWriteLatency(std::vector<Device>& devices,
 
   DLOG(INFO) << "WRITE :: " << DeviceTypeToString(device_type) << "\n";
   bool is_sequential = IsSequential(devices, device_type, block_id);
-  if(is_sequential == true) {
-    std::cout << DeviceTypeToString(device_type) << " " \
-        << GetPattern(is_sequential) << "\n";
-  }
+  //if(is_sequential == true) {
+  //  std::cout << DeviceTypeToString(device_type) << " " << GetPattern(is_sequential) << "\n";
+  //}
 
   switch(device_type){
     case DEVICE_TYPE_DRAM:
@@ -89,10 +88,9 @@ size_t GetReadLatency(std::vector<Device>& devices,
 
   DLOG(INFO) << "READ :: " << DeviceTypeToString(device_type) << "\n";
   bool is_sequential = IsSequential(devices, device_type, block_id);
-  if(is_sequential == true) {
-    std::cout << DeviceTypeToString(device_type) << " " \
-        << GetPattern(is_sequential) << "\n";
-  }
+  //if(is_sequential == true) {
+  //  std::cout << DeviceTypeToString(device_type) << " " << GetPattern(is_sequential) << "\n";
+  //}
 
   switch(device_type){
     case DEVICE_TYPE_DRAM:

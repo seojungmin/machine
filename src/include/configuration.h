@@ -36,6 +36,9 @@ class configuration {
   // caching type
   CachingType caching_type;
 
+  // file name
+  std::string file_name;
+
   // upwards migration frequency
   size_t migration_frequency;
 

@@ -16,7 +16,8 @@ void Usage() {
       "Command line options : machine <options>\n"
       "   -a --hierarchy_type                 :  hierarchy type\n"
       "   -c --caching_type                   :  caching type\n"
-      "   -f --migration_frequency            :  migration frequency from NVM to DRAM\n"
+      "   -f --file_name                      :  file name\n"
+      "   -m --migration_frequency            :  migration frequency\n"
       "   -l --logging_type                   :  logging type\n"
       "   -s --machine_size                   :  machine size\n"
       "   -o --operation_count                :  operation count\n"
@@ -27,7 +28,8 @@ void Usage() {
 static struct option opts[] = {
     {"hierarchy_type", optional_argument, NULL, 'a'},
     {"caching_type", optional_argument, NULL, 'c'},
-    {"migration_frequency", optional_argument, NULL, 'f'},
+    {"file_name", optional_argument, NULL, 'f'},
+    {"migration_frequency", optional_argument, NULL, 'm'},
     {"logging_type", optional_argument, NULL, 'l'},
     {"machine_size", optional_argument, NULL, 's'},
     {"operation_count", optional_argument, NULL, 'o'},
@@ -55,6 +57,10 @@ static void ValidateCachingType(const configuration &state) {
     printf("%30s : %s\n", "caching_type",
            CachingTypeToString(state.caching_type).c_str());
   }
+}
+
+static void ValidateFileName(const configuration &state){
+  printf("%30s : %s\n", "file_name", state.file_name.c_str());
 }
 
 static void ValidateLoggingType(const configuration &state) {
@@ -139,12 +145,13 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
   state.machine_size = 1000;
   state.migration_frequency = 3;
   state.operation_count = 1000;
+  state.file_name = "";
 
   // Parse args
   while (1) {
     int idx = 0;
     int c = getopt_long(argc, argv,
-                        "a:c:f:l:o:s:vh",
+                        "a:c:f:m:l:o:s:vh",
                         opts, &idx);
 
     if (c == -1) break;
@@ -157,6 +164,9 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
         state.caching_type = (CachingType)atoi(optarg);
         break;
       case 'f':
+        state.file_name = optarg;
+        break;
+      case 'm':
         state.migration_frequency = atoi(optarg);
         break;
       case 'l':
@@ -189,6 +199,7 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
   ValidateHierarchyType(state);
   ValidateLoggingType(state);
   ValidateCachingType(state);
+  ValidateFileName(state);
   ValidateMachineSize(state);
   ValidateMigrationFrequency(state);
   ValidateOperationCount(state);
