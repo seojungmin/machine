@@ -5,8 +5,6 @@
 
 namespace machine {
 
-size_t scale_factor = 100;
-
 std::map<DeviceType, size_t> device_size;
 std::map<DeviceType, size_t> seq_read_latency;
 std::map<DeviceType, size_t> seq_write_latency;
@@ -15,9 +13,9 @@ std::map<DeviceType, size_t> rnd_write_latency;
 
 void BootstrapDeviceMetrics(){
 
-  device_size[DEVICE_TYPE_DRAM] = 32 * scale_factor;
-  device_size[DEVICE_TYPE_NVM] = 256 * scale_factor;
-  device_size[DEVICE_TYPE_SSD] = 1024 * scale_factor;
+  device_size[DEVICE_TYPE_DRAM] = (128 * 1000)/4;
+  device_size[DEVICE_TYPE_NVM] = (1024 * 1000)/4;
+  device_size[DEVICE_TYPE_SSD] = (32 * 1024 * 1000)/4;
 
   seq_read_latency[DEVICE_TYPE_DRAM] = 1;
   seq_read_latency[DEVICE_TYPE_NVM] = 5;
