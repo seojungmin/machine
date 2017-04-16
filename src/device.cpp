@@ -11,27 +11,34 @@ std::map<DeviceType, size_t> seq_write_latency;
 std::map<DeviceType, size_t> rnd_read_latency;
 std::map<DeviceType, size_t> rnd_write_latency;
 
+size_t nvm_read_scale_factor = 10;
+size_t nvm_write_scale_factor = 10;
+
 void BootstrapDeviceMetrics(){
+
+  // SIZES (4K blocks)
 
   device_size[DEVICE_TYPE_DRAM] = (128 * 1000)/4;
   device_size[DEVICE_TYPE_NVM] = (1024 * 1000)/4;
   device_size[DEVICE_TYPE_SSD] = (32 * 1024 * 1000)/4;
 
-  seq_read_latency[DEVICE_TYPE_DRAM] = 1;
-  seq_read_latency[DEVICE_TYPE_NVM] = 5;
-  seq_read_latency[DEVICE_TYPE_SSD] = 10;
+  // LATENCIES (us)
 
-  seq_write_latency[DEVICE_TYPE_DRAM] = 1;
-  seq_write_latency[DEVICE_TYPE_NVM] = 10;
-  seq_write_latency[DEVICE_TYPE_SSD] = 20;
+  seq_read_latency[DEVICE_TYPE_DRAM] = 0.4;
+  seq_read_latency[DEVICE_TYPE_NVM] = seq_read_latency[DEVICE_TYPE_DRAM] * nvm_read_scale_factor;
+  seq_read_latency[DEVICE_TYPE_SSD] = 100;
 
-  rnd_read_latency[DEVICE_TYPE_DRAM] = 1;
-  rnd_read_latency[DEVICE_TYPE_NVM] = 5;
-  rnd_read_latency[DEVICE_TYPE_SSD] = 10;
+  seq_write_latency[DEVICE_TYPE_DRAM] = 0.6;
+  seq_write_latency[DEVICE_TYPE_NVM] = seq_write_latency[DEVICE_TYPE_DRAM] * nvm_write_scale_factor;
+  seq_write_latency[DEVICE_TYPE_SSD] = 250;
 
-  rnd_write_latency[DEVICE_TYPE_DRAM] = 1;
-  rnd_write_latency[DEVICE_TYPE_NVM] = 10;
-  rnd_write_latency[DEVICE_TYPE_SSD] = 20;
+  rnd_read_latency[DEVICE_TYPE_DRAM] = 0.5;
+  rnd_read_latency[DEVICE_TYPE_NVM] = rnd_read_latency[DEVICE_TYPE_DRAM] * nvm_read_scale_factor;
+  rnd_read_latency[DEVICE_TYPE_SSD] = 100;
+
+  rnd_write_latency[DEVICE_TYPE_DRAM] = 0.7;
+  rnd_write_latency[DEVICE_TYPE_NVM] = rnd_write_latency[DEVICE_TYPE_DRAM] * nvm_write_scale_factor;
+  rnd_write_latency[DEVICE_TYPE_SSD] = 400;
 
 }
 

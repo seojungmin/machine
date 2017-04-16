@@ -367,7 +367,7 @@ void MachineHelper() {
   }
 
   std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
-  std::cout << "Duration : " << total_duration/1000 << " (s) \n";
+  std::cout << "Duration : " << total_duration/100 << " (s) \n";
   std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
 
   // Get machine size

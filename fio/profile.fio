@@ -15,9 +15,9 @@ bs=4k
 ioengine=libaio
 iodepth=4
 size=1g
-direct=1
+direct=0
 runtime=60
-directory=.
+directory=/mnt/ramdisk/
 filename=test.txt
 
 [seq-read]
