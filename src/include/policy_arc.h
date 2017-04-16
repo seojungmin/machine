@@ -83,7 +83,7 @@ class ARCCachePolicy : public ICachePolicy<Key> {
 
     }
 
-    Check();
+    //Check();
 
   }
 
@@ -104,7 +104,7 @@ class ARCCachePolicy : public ICachePolicy<Key> {
       DLOG(INFO) << "Moved it to T2";
     }
 
-    Check();
+    //Check();
 
   }
 
@@ -130,7 +130,7 @@ class ARCCachePolicy : public ICachePolicy<Key> {
       B2.push_front(victim);
     }
 
-    Check();
+    //Check();
 
   }
 

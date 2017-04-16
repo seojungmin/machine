@@ -64,15 +64,6 @@ void PrintMachine(){
 
 }
 
-void BootstrapMachine(const size_t& total_slots) {
-
-  auto last_device = state.devices.back();
-  for(size_t slot_itr = 0; slot_itr < total_slots; slot_itr++){
-    last_device.cache.Put(slot_itr, CLEAN_BLOCK);
-  }
-
-}
-
 DeviceType LocateInMemoryDevices(const size_t& block_id){
   return LocateInDevices(state.memory_devices, block_id);
 }
@@ -280,12 +271,6 @@ void MachineHelper() {
   size_t total_slots = state.machine_size;
   std::cout << "Total slots : " << total_slots << "\n";
 
-  // Machine size
-  BootstrapMachine(total_slots);
-
-  // Reinit duration
-  total_duration = 0;
-
   // Go through trace file
   std::unique_ptr<std::istream> input;
   char operation_type;
@@ -336,6 +321,9 @@ void MachineHelper() {
   // Reset file pointer
   input->clear();
   input->seekg(0, std::ios::beg);
+
+  // Reinit duration
+  total_duration = 0;
 
   // RUN SIMULATION
   while(!input->eof()){
