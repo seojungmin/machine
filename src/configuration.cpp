@@ -19,7 +19,6 @@ void Usage() {
       "   -f --file_name                      :  file name\n"
       "   -m --migration_frequency            :  migration frequency\n"
       "   -l --logging_type                   :  logging type\n"
-      "   -s --machine_size                   :  machine size\n"
       "   -o --operation_count                :  operation count\n"
       "   -v --verbose                        :  verbose\n";
   exit(EXIT_FAILURE);
@@ -31,7 +30,6 @@ static struct option opts[] = {
     {"file_name", optional_argument, NULL, 'f'},
     {"migration_frequency", optional_argument, NULL, 'm'},
     {"logging_type", optional_argument, NULL, 'l'},
-    {"machine_size", optional_argument, NULL, 's'},
     {"operation_count", optional_argument, NULL, 'o'},
     {"verbose", optional_argument, NULL, 'v'},
     {NULL, 0, NULL, 0}
@@ -76,10 +74,6 @@ static void ValidateLoggingType(const configuration &state) {
 
 static void ValidateMigrationFrequency(const configuration &state){
   printf("%30s : %lu\n", "migration_frequency", state.migration_frequency);
-}
-
-static void ValidateMachineSize(const configuration &state) {
-  printf("%30s : %lu\n", "machine_size", state.machine_size);
 }
 
 static void ValidateOperationCount(const configuration &state) {
@@ -151,7 +145,7 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
   while (1) {
     int idx = 0;
     int c = getopt_long(argc, argv,
-                        "a:c:f:m:l:o:s:vh",
+                        "a:c:f:m:l:o:vh",
                         opts, &idx);
 
     if (c == -1) break;
@@ -175,9 +169,6 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
       case 'o':
         state.operation_count = atoi(optarg);
         break;
-      case 's':
-        state.machine_size = atoi(optarg);
-        break;
       case 'v':
         state.verbose = atoi(optarg);
         break;
@@ -200,7 +191,6 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
   ValidateLoggingType(state);
   ValidateCachingType(state);
   ValidateFileName(state);
-  ValidateMachineSize(state);
   ValidateMigrationFrequency(state);
   ValidateOperationCount(state);
 

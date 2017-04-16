@@ -358,7 +358,7 @@ void MachineHelper() {
         break;
     }
 
-    if(operation_itr % 10000 == 0){
+    if(operation_itr % 100000 == 0){
       std::cout << "Operation " << operation_itr << " :: " <<
           operation_type << " " << global_block_number << " "
           << fork_number << " " << block_number << "\n";
