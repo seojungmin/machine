@@ -6,6 +6,7 @@
 #include <fstream>
 #include <iomanip>
 #include <map>
+#include <set>
 
 #include "macros.h"
 #include "workload.h"
@@ -174,6 +175,13 @@ void BringBlockToStorage(const size_t& block_id,
 
 }
 
+void BootstrapBlock(const size_t& block_id) {
+
+  auto last_device_cache = state.devices.back().cache;
+  last_device_cache.Put(block_id, CLEAN_BLOCK);
+
+}
+
 void WriteBlock(const size_t& block_id) {
 
   // Bring block to memory if needed
@@ -259,6 +267,11 @@ void FlushBlock(const size_t& block_id) {
 
 }
 
+size_t GetGlobalBlockNumber(const size_t& fork_number,
+                            const size_t& block_number){
+  return (fork_number * 10 + block_number);
+}
+
 void MachineHelper() {
 
   // Run workload
@@ -291,8 +304,40 @@ void MachineHelper() {
   char buffer[fragment_size];
 
   size_t operation_itr = 0;
+  size_t invalid_operation_itr = 0;
 
-  // Go over the input stream
+  std::set<size_t> block_list;
+
+  // PREPROCESS
+  while(!input->eof()){
+
+    // Get a line from the input stream
+    input->getline(buffer, fragment_size);
+
+    // Check statement
+    sscanf(buffer, "%c,%lu,%lu",
+           &operation_type,
+           &fork_number,
+           &block_number);
+
+    auto global_block_number = GetGlobalBlockNumber(fork_number, block_number);
+
+    // Block does not exist
+    if(block_list.count(global_block_number) == 0){
+      BootstrapBlock(global_block_number);
+      block_list.insert(global_block_number);
+    }
+
+  }
+
+  // Print machine caches
+  PrintMachine();
+
+  // Reset file pointer
+  input->clear();
+  input->seekg(0, std::ios::beg);
+
+  // RUN SIMULATION
   while(!input->eof()){
     operation_itr++;
 
@@ -300,19 +345,12 @@ void MachineHelper() {
     input->getline(buffer, fragment_size);
 
     // Check statement
-    sscanf(buffer, "%c%lu%lu",
+    sscanf(buffer, "%c,%lu,%lu",
            &operation_type,
            &fork_number,
            &block_number);
 
-    auto global_block_number = fork_number * 10 + block_number;
-
-    if(global_block_number > state.machine_size){
-      std::cout << "Operation " << operation_itr << " :: " <<
-          operation_type << " " << global_block_number << " "
-          << fork_number << " " << block_number << "\n";
-      continue;
-    }
+    auto global_block_number = GetGlobalBlockNumber(fork_number, block_number);
 
     switch(operation_type){
       case 'r':
@@ -328,11 +366,11 @@ void MachineHelper() {
         break;
 
       default:
-        std::cout << "Invalid operation type: " << operation_type << "\n";
+        invalid_operation_itr++;
         break;
     }
 
-    if(operation_itr % 1000 == 0){
+    if(operation_itr % 10000 == 0){
       std::cout << "Operation " << operation_itr << " :: " <<
           operation_type << " " << global_block_number << " "
           << fork_number << " " << block_number << "\n";
@@ -347,6 +385,7 @@ void MachineHelper() {
   // Get machine size
   auto machine_size = GetMachineSize();
   std::cout << "Machine size  : " << machine_size << "\n";
+  std::cout << "Invalid operation count  : " << invalid_operation_itr << "\n";
 
   // Print machine caches
   PrintMachine();
