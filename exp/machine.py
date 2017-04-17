@@ -162,11 +162,15 @@ SIZE_TYPES = [
 LATENCY_TYPE_1 = 1
 LATENCY_TYPE_2 = 2
 LATENCY_TYPE_3 = 3
+LATENCY_TYPE_4 = 4
+LATENCY_TYPE_5 = 5
 
 LATENCY_TYPES = [
     LATENCY_TYPE_1,
     LATENCY_TYPE_2,
-    LATENCY_TYPE_3
+    LATENCY_TYPE_3,
+    LATENCY_TYPE_4,
+    LATENCY_TYPE_5
 ]
 
 ## CACHING TYPES
@@ -325,14 +329,14 @@ def create_legend_latency_type():
 
     LEGEND_VALUES = LATENCY_TYPES
 
-    figlegend = pylab.figure(figsize=(10, 0.5))
+    figlegend = pylab.figure(figsize=(15, 0.5))
     idx = 0
     lines = [None] * (len(LEGEND_VALUES) + 1)
     data = [1]
     x_values = [1]
 
     TITLE = "LATENCIES:"
-    LABELS = [TITLE, "4x-4x", "4x-10x", "10x-10x"]
+    LABELS = [TITLE, "2x-4x", "2x-10x", "4x-4x", "4x-10x", "10x-10x"]
 
     lines[idx], = ax1.plot(x_values, data, linewidth = 0)
     idx = 1
@@ -347,7 +351,7 @@ def create_legend_latency_type():
 
     # LEGEND
     figlegend.legend(lines, LABELS, prop=LEGEND_FP,
-                     loc=1, ncol=4,
+                     loc=1, ncol=6,
                      mode="expand", shadow=OPT_LEGEND_SHADOW,
                      frameon=False, borderaxespad=0.0,
                      handleheight=1, handlelength=3)
@@ -463,6 +467,7 @@ def collect_stat(stat_offset):
             line_data = line.split(" ")
             stat = float(line_data[stat_offset])
 
+    LOG.info("stat: " + str(stat))
     return stat
 
 # Write result to a given file that already exists
@@ -518,10 +523,10 @@ def benchmark_eval():
                 LOG.info(SUB_MINOR_STRING)
 
                 for hierarchy_type in BENCHMARK_EXP_HIERARCHY_TYPES:
-                    LOG.info(" > hierarchy_type: " + HIERARCHY_TYPES_STRINGS[hierarchy_type] +
-                          " latency_type: " + str(latency_type) +
+                    LOG.info(" > caching_type: " + CACHING_TYPES_STRINGS[caching_type] +
                           " size_type: " + str(size_type) +
-                          " caching_type: " + CACHING_TYPES_STRINGS[caching_type] +
+                          " latency_type: " + str(latency_type) +
+                          " hierarchy_type: " + HIERARCHY_TYPES_STRINGS[hierarchy_type] +
                           "\n"
                     )
 

@@ -79,7 +79,11 @@ std::string LatencyTypeToString(const LatencyType& latency_type){
       return "2";
     case LATENCY_TYPE_3:
       return "3";
-      default:
+    case LATENCY_TYPE_4:
+      return "4";
+    case LATENCY_TYPE_5:
+      return "5";
+    default:
       return "INVALID";
   }
 
