@@ -358,10 +358,10 @@ void MachineHelper() {
 
   }
 
-  auto duration_in_sec = total_duration/100;
+  auto duration = total_duration;
 
   std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
-  std::cout << "Duration : " << duration_in_sec << " (s) \n";
+  std::cout << "Duration : " << duration << " (s) \n";
   std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
 
   // Get machine size
@@ -373,7 +373,7 @@ void MachineHelper() {
   PrintMachine();
 
   // Emit output
-  WriteOutput(duration_in_sec);
+  WriteOutput(duration);
 
 }
 

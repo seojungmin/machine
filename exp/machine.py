@@ -119,8 +119,9 @@ EXIT_FAILURE = 1
 ## PROGRAM DIRS
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
-BUILD_DIR = BASE_DIR + "../build/test/"
-PROGRAM_NAME = "machine"
+BUILD_DIR = BASE_DIR + "/../build/test/"
+TRACE_DIR = BASE_DIR + "/../traces/"
+PROGRAM_NAME = BUILD_DIR + "machine"
 
 OUTPUT_FILE = "outputfile.summary"
 
@@ -192,7 +193,7 @@ CACHING_TYPES = [
 TRACE_TYPE_TPCC = 1
 
 TRACE_TYPES_STRINGS = {
-    1 : "tpcc"
+    1 : TRACE_DIR + "tpcc.txt"
 }
 
 TRACE_TYPES = [
@@ -205,7 +206,7 @@ THROUGHPUT_OFFSET = 0
 
 ## DEFAULTS
 
-TIMEOUT_DURATION = 10
+DEFAULT_DURATION = 10
 DEFAULT_HIERARCHY_TYPE = HIERARCHY_TYPE_NVM
 DEFAULT_SIZE_TYPE = SIZE_TYPE_1
 DEFAULT_CACHING_TYPE = CACHING_TYPE_FIFO
@@ -361,12 +362,12 @@ def get_label(label):
     bold_label = "\\textbf{" + label + "}"
     return bold_label
 
-def create_benchmark_line_chart(datasets, key_distribution_type):
+def create_benchmark_line_chart(datasets):
     fig = plot.figure()
     ax1 = fig.add_subplot(111)
 
     # X-AXIS
-    x_values = [str(i) for i in BENCHMARK_EXP_THREAD_COUNTS]
+    x_values = [HIERARCHY_TYPES_STRINGS[i] for i in BENCHMARK_EXP_HIERARCHY_TYPES]
     N = len(x_values)
     ind = np.arange(N)
 
@@ -377,7 +378,7 @@ def create_benchmark_line_chart(datasets, key_distribution_type):
         for line in  range(len(datasets[group])):
             for col in  range(len(datasets[group][line])):
                 if col == 1:
-                    y_values.append(datasets[group][line][col]/1000)
+                    y_values.append(datasets[group][line][col])
         LOG.info("group_data = %s", str(y_values))
         ax1.plot(ind + 0.5, y_values,
                  color=OPT_COLORS[idx],
@@ -391,26 +392,15 @@ def create_benchmark_line_chart(datasets, key_distribution_type):
     makeGrid(ax1)
 
     # Y-AXIS
+    YAXIS_MIN = 0
     ax1.yaxis.set_major_locator(LinearLocator(YAXIS_TICKS))
     ax1.minorticks_off()
-    ax1.set_ylabel(get_label('Throughput (K)'), fontproperties=LABEL_FP)
-
-    YAXIS_MIN = 0
+    ax1.set_ylabel(get_label('Duration (us)'), fontproperties=LABEL_FP)
     ax1.set_ylim(bottom=YAXIS_MIN)
-
-    YAXIS_MAX = 0
-    if key_distribution_type == KEY_DISTRIBUTION_TYPE_UNIFORM:
-        YAXIS_MAX = 8 * 1000
-    elif key_distribution_type == KEY_DISTRIBUTION_TYPE_ZIPF:
-        YAXIS_MAX = 16 * 1000
-    elif key_distribution_type == KEY_DISTRIBUTION_TYPE_MONOTONIC:
-        YAXIS_MAX = 24 * 1000
-
-    ax1.set_ylim(top=YAXIS_MAX)
 
     # X-AXIS
     ax1.set_xticks(ind + 0.5)
-    ax1.set_xlabel(get_label('Thread counts'), fontproperties=LABEL_FP)
+    ax1.set_xlabel(get_label('Hierarchy Types'), fontproperties=LABEL_FP)
     ax1.set_xticklabels(x_values)
     #ax1.set_xlim([XAXIS_MIN, XAXIS_MAX])
 
@@ -432,28 +422,28 @@ def benchmark_plot():
     # CLEAN UP RESULT DIR
     clean_up_dir(BENCHMARK_PLOT_DIR)
 
-    for key_distribution_type in BENCHMARK_EXP_KEY_DISTRIBUTION_TYPES:
+    for caching_type in BENCHMARK_EXP_CACHING_TYPES:
         print(MAJOR_STRING)
-
-        for workload_type in BENCHMARK_EXP_WORKLOAD_TYPES:
+        
+        for size_type in BENCHMARK_EXP_SIZE_TYPES:
 
             datasets = []
-            for container_type in BENCHMARK_EXP_CONTAINER_TYPES:
+            for latency_type in BENCHMARK_EXP_LATENCY_TYPES:
 
                 # Get result file
-                result_dir_list = [KEY_DISTRIBUTION_TYPES_STRINGS[key_distribution_type],
-                                   WORKLOAD_TYPES_STRINGS[workload_type],
-                                   container_type]
+                result_dir_list = [CACHING_TYPES_STRINGS[caching_type],
+                                   str(size_type),
+                                   str(latency_type)]
                 result_file = get_result_file(BENCHMARK_DIR, result_dir_list, BENCHMARK_CSV)
 
                 dataset = loadDataFile(result_file)
                 datasets.append(dataset)
 
-            fig = create_benchmark_line_chart(datasets, key_distribution_type)
+            fig = create_benchmark_line_chart(datasets)
 
             file_name = BENCHMARK_PLOT_DIR + "benchmark" + "-" + \
-                        KEY_DISTRIBUTION_TYPES_STRINGS[key_distribution_type] + "-" + \
-                        WORKLOAD_TYPES_STRINGS[workload_type] + ".pdf"
+                        CACHING_TYPES_STRINGS[caching_type] + "-" + \
+                        str(size_type) + ".pdf"
 
             saveGraph(fig, file_name, width=OPT_GRAPH_WIDTH, height=OPT_GRAPH_HEIGHT)
 
@@ -496,7 +486,6 @@ def print_eta(*args):
 
     # Factor in repeat count and default duration
     eta_seconds = eta_seconds * DEFAULT_DURATION
-    eta_seconds = eta_seconds * REPEAT_COUNT
 
     LOG.info("EXPECTED TIME TO COMPLETE (HH:MM::SS): " +
              str(datetime.timedelta(seconds=eta_seconds)))
@@ -513,10 +502,10 @@ def benchmark_eval():
     LOG.info("BENCHMARK EVAL")
 
     # ETA
-    l1 = len(BENCHMARK_EXP_HIERARCHY_TYPES )
-    l2 = len(BENCHMARK_EXP_LATENCY_TYPES)
-    l3 = len(BENCHMARK_EXP_SIZE_TYPES)
-    l4 = len(BENCHMARK_EXP_CACHING_TYPES)
+    l1 = len(BENCHMARK_EXP_CACHING_TYPES)
+    l2 = len(BENCHMARK_EXP_SIZE_TYPES)
+    l3 = len(BENCHMARK_EXP_LATENCY_TYPES)
+    l4 = len(BENCHMARK_EXP_HIERARCHY_TYPES)
     print_eta(l1, l2, l3, l4)
 
     for caching_type in BENCHMARK_EXP_CACHING_TYPES:
@@ -607,23 +596,17 @@ def run_experiment(
                     "-l", str(latency_type),
                     "-s", str(size_type),
                     "-c", str(caching_type),
-                    "-f", "segment.txt",
+                    "-f", TRACE_TYPES_STRINGS[trace_type],
                     "-m", str(migration_frequency),
                 ]
     arg_string = ' '.join(arg_list[0:])
-
-    if function_repeat_count == 1:
-        LOG.info(arg_string)
+    LOG.info(arg_string)
 
     ## Run and check return status
     run_status = True
     try:
         subprocess.check_call(arg_list,
-                              stdout=PROGRAM_OUTPUT_FILE,
-                              timeout=TIMEOUT_DURATION)
-    except subprocess.TimeoutExpired as e:
-        LOG.error("TIMED OUT: " + PROGRAM_NAME)
-        run_status = False
+                              stdout=PROGRAM_OUTPUT_FILE)
     except subprocess.CalledProcessError as e:
         LOG.error("FAILED: " + PROGRAM_NAME)
         run_status = False
