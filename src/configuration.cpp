@@ -15,6 +15,7 @@ void Usage() {
       "\n"
       "Command line options : machine <options>\n"
       "   -a --hierarchy_type                 :  hierarchy type\n"
+      "   -s --size_type                      :  size type\n"
       "   -c --caching_type                   :  caching type\n"
       "   -f --file_name                      :  file name\n"
       "   -m --migration_frequency            :  migration frequency\n"
@@ -28,6 +29,7 @@ void Usage() {
 
 static struct option opts[] = {
     {"hierarchy_type", optional_argument, NULL, 'a'},
+    {"size_type", optional_argument, NULL, 's'},
     {"caching_type", optional_argument, NULL, 'c'},
     {"file_name", optional_argument, NULL, 'f'},
     {"migration_frequency", optional_argument, NULL, 'm'},
@@ -47,6 +49,17 @@ static void ValidateHierarchyType(const configuration &state) {
   else {
     printf("%30s : %s\n", "caching_type",
            HierarchyTypeToString(state.hierarchy_type).c_str());
+  }
+}
+
+static void ValidateSizeType(const configuration &state) {
+  if (state.size_type < 1 || state.size_type > 5) {
+    printf("Invalid size_type :: %d\n", state.size_type);
+    exit(EXIT_FAILURE);
+  }
+  else {
+    printf("%30s : %s\n", "size_type",
+           SizeTypeToString(state.size_type).c_str());
   }
 }
 
@@ -96,14 +109,17 @@ void ConstructDeviceList(configuration &state){
 
   auto last_device_type = GetLastDevice(state.hierarchy_type);
   Device dram_device = DeviceFactory::GetDevice(DEVICE_TYPE_DRAM,
+                                                state.size_type,
                                                 state.caching_type,
                                                 state.machine_size,
                                                 last_device_type);
   Device nvm_device = DeviceFactory::GetDevice(DEVICE_TYPE_NVM,
+                                               state.size_type,
                                                state.caching_type,
                                                state.machine_size,
                                                last_device_type);
   Device ssd_device = DeviceFactory::GetDevice(DEVICE_TYPE_SSD,
+                                               state.size_type,
                                                state.caching_type,
                                                state.machine_size,
                                                last_device_type);
@@ -146,6 +162,7 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
   state.verbose = false;
 
   state.hierarchy_type = HIERARCHY_TYPE_DRAM_NVM_SSD;
+  state.size_type = SIZE_TYPE_1;
   state.logging_type = LOGGING_TYPE_WBL;
   state.caching_type = CACHING_TYPE_FIFO;
   state.machine_size = 1000;
@@ -159,7 +176,7 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
   while (1) {
     int idx = 0;
     int c = getopt_long(argc, argv,
-                        "a:c:f:m:l:o:r:w:vh",
+                        "a:c:f:m:l:o:r:s:w:vh",
                         opts, &idx);
 
     if (c == -1) break;
@@ -186,6 +203,9 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
       case 'r':
         state.nvm_read_latency = atoi(optarg);
         break;
+      case 's':
+        state.size_type = (SizeType)atoi(optarg);
+        break;
       case 'w':
         state.nvm_write_latency = atoi(optarg);
         break;
@@ -208,6 +228,7 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
   printf("//===----------------------------------------------------------------------===//\n");
 
   ValidateHierarchyType(state);
+  ValidateSizeType(state);
   ValidateLoggingType(state);
   ValidateCachingType(state);
   ValidateFileName(state);

@@ -21,6 +21,9 @@ class configuration {
   // hierarchy type
   HierarchyType hierarchy_type;
 
+  // size type
+  SizeType size_type;
+
   // list of devices in hierarchy
   std::vector<Device> devices;
 

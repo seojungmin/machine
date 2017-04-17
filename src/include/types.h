@@ -16,6 +16,16 @@ enum HierarchyType {
 
 };
 
+enum SizeType {
+  SIZE_TYPE_INVALID = 0,
+
+  SIZE_TYPE_1 = 1,
+  SIZE_TYPE_2 = 2,
+  SIZE_TYPE_3 = 3,
+  SIZE_TYPE_4 = 4
+
+};
+
 enum CachingType {
   CACHING_TYPE_INVALID = 0,
 
@@ -46,6 +56,8 @@ enum LoggingType {
 DeviceType GetLastDevice(const HierarchyType& hierarchy_type);
 
 std::string HierarchyTypeToString(const HierarchyType& hierarchy_type);
+
+std::string SizeTypeToString(const SizeType& size_type);
 
 std::string CachingTypeToString(const CachingType& caching_type);
 

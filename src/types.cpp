@@ -53,6 +53,23 @@ std::string HierarchyTypeToString(const HierarchyType& hierarchy_type){
 
 }
 
+std::string SizeTypeToString(const SizeType& size_type){
+
+  switch (size_type) {
+    case SIZE_TYPE_1:
+      return "1";
+    case SIZE_TYPE_2:
+      return "2";
+    case SIZE_TYPE_3:
+      return "3";
+    case SIZE_TYPE_4:
+      return "4";
+    default:
+      return "INVALID";
+  }
+
+}
+
 std::string LoggingTypeToString(const LoggingType& logging_type){
 
   switch (logging_type) {

@@ -319,9 +319,20 @@ void MoveVictim(std::vector<Device>& devices,
 // DEVICE FACTORY
 
 Device DeviceFactory::GetDevice(const DeviceType& device_type,
+                                const SizeType& size_type,
                                 const CachingType& caching_type,
                                 const size_t& machine_size,
                                 const DeviceType& last_device_type){
+
+  switch(size_type){
+    case SIZE_TYPE_1:
+      break;
+
+    default:{
+      std::cout << "Invalid size";
+      exit(EXIT_FAILURE);
+    }
+  }
 
   switch (device_type){
     case DEVICE_TYPE_DRAM:
