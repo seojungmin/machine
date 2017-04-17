@@ -334,3 +334,4 @@ stats_log
 test.txt
 machine.txt
 outputfile.summary
+tmp*

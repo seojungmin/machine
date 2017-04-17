@@ -353,7 +353,8 @@ void MachineHelper() {
     if(operation_itr % 100000 == 0){
       std::cout << "Operation " << operation_itr << " :: " <<
           operation_type << " " << global_block_number << " "
-          << fork_number << " " << block_number << "\n";
+          << fork_number << " " << block_number << " :: "
+          << total_duration << "\n";
     }
 
   }
@@ -361,7 +362,7 @@ void MachineHelper() {
   auto duration = total_duration;
 
   std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
-  std::cout << "Duration : " << duration << " (s) \n";
+  std::cout << "Duration : " << duration << " (us) \n";
   std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
 
   // Get machine size

@@ -7,11 +7,10 @@
 namespace machine {
 
 std::map<DeviceType, size_t> device_size;
-std::map<DeviceType, size_t> seq_read_latency;
-std::map<DeviceType, size_t> seq_write_latency;
-std::map<DeviceType, size_t> rnd_read_latency;
-std::map<DeviceType, size_t> rnd_write_latency;
-
+std::map<DeviceType, double> seq_read_latency;
+std::map<DeviceType, double> seq_write_latency;
+std::map<DeviceType, double> rnd_read_latency;
+std::map<DeviceType, double> rnd_write_latency;
 
 void BootstrapDeviceMetrics(const configuration &state){
 
