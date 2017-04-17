@@ -56,11 +56,7 @@ OPT_GRAPH_WIDTH = 400
 # to match the length of your data.
 NUM_COLORS = 5
 COLOR_MAP = ( '#418259', '#bd5632', '#e1a94c', '#7d6c5b', '#364d38', '#c4e1c6')
-COLOR_MAP_2 = ( '#a8b2c1', '#9EC9E9', '#80CA86', '#F58A87', '#D89761', '#FED113' )
-COLOR_MAP_3 = ( '#2A363B', '#FECEA8', '#99B898')
-COLOR_MAP_4 = ( '#262626', '#FECEA8', '#67abb8', '#f15b40')
-COLOR_MAP_5 = ( '#262626', '#f15b40', '#67abb8')
-COLOR_MAP_6 = ( '#262626', '#67abb8', '#FECEA8', '#f15b40')
+COLOR_MAP_2 = ( '#262626', '#FECEA8', '#67abb8', '#f15b40')
 
 OPT_COLORS = COLOR_MAP
 
@@ -123,101 +119,99 @@ EXIT_FAILURE = 1
 ## PROGRAM DIRS
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
-BUILD_DIR = BASE_DIR + "\\..\\..\\..\\Sources\\deuteronomy\\build\\"
-PROGRAM_NAME = "bztree_benchmark.exe"
-
-RELEASE_PROGRAM = BUILD_DIR + "\\Release\\" + PROGRAM_NAME
-DEBUG_PROGRAM = BUILD_DIR + "\\Debug\\" + PROGRAM_NAME
+BUILD_DIR = BASE_DIR + "../build/test/"
+PROGRAM_NAME = "machine"
 
 OUTPUT_FILE = "outputfile.summary"
-LOG_TO_STDERR = 0
 
-## BENCHMARK TYPES
+## HIERARCHY TYPES
+HIERARCHY_TYPE_NVM = 1
+HIERARCHY_TYPE_DRAM_NVM = 2
+HIERARCHY_TYPE_DRAM_SSD = 3
+HIERARCHY_TYPE_DRAM_NVM_SSD = 4
 
-BENCHMARK_TYPE_RANDOMREADRANDOMWRITE = "randomreadrandomwrite"
-BENCHMARK_TYPE_MWCAS = "mwcas"
-
-BENCHMARK_TYPES = [BENCHMARK_TYPE_RANDOMREADRANDOMWRITE]
-
-## WORKLOAD TYPES (UPDATE %)
-WORKLOAD_TYPE_READ_ONLY  = 0
-WORKLOAD_TYPE_READ_MOSTLY  = 10
-WORKLOAD_TYPE_READ_HEAVY  = 25
-WORKLOAD_TYPE_BALANCED  = 50
-
-WORKLOAD_TYPES_STRINGS = {
-    0 : "read-only",
-    10 : "read-mostly",
-    25 : "read-heavy",
-    50 : "balanced",
+HIERARCHY_TYPES_STRINGS = {
+    1 : "nvm",
+    2 : "dram-nvm",
+    3 : "dram-ssd",
+    4 : "dram-nvm-ssd",
 }
 
-WORKLOAD_TYPES = [
-                WORKLOAD_TYPE_READ_ONLY,
-                WORKLOAD_TYPE_READ_MOSTLY,
-                WORKLOAD_TYPE_READ_HEAVY,
-                WORKLOAD_TYPE_BALANCED
+HIERARCHY_TYPES = [
+    HIERARCHY_TYPE_NVM,
+    HIERARCHY_TYPE_DRAM_NVM,
+    HIERARCHY_TYPE_DRAM_SSD,
+    HIERARCHY_TYPE_DRAM_NVM_SSD
 ]
 
-## KEY DISTRIBUTION TYPES
-KEY_DISTRIBUTION_TYPE_UNIFORM  = 1   # Uniform random
-KEY_DISTRIBUTION_TYPE_ZIPF = 2       # Zipfian skew
-KEY_DISTRIBUTION_TYPE_MONOTONIC = 3  # Monotonically increasing
+## SIZE TYPES
+SIZE_TYPE_1 = 1
+SIZE_TYPE_2 = 2
+SIZE_TYPE_3 = 3
+SIZE_TYPE_4 = 4
 
-KEY_DISTRIBUTION_TYPES_STRINGS = {
-    1 : "uniform",
-    2 : "zipf",
-    3 : "monotonic",
+SIZE_TYPES = [
+    SIZE_TYPE_1,
+    SIZE_TYPE_2,
+    SIZE_TYPE_3,
+    SIZE_TYPE_4
+]
+
+## LATENCY TYPES
+LATENCY_TYPE_1 = 1
+LATENCY_TYPE_2 = 2
+LATENCY_TYPE_3 = 3
+
+LATENCY_TYPES = [
+    LATENCY_TYPE_1,
+    LATENCY_TYPE_2,
+    LATENCY_TYPE_3
+]
+
+## CACHING TYPES
+CACHING_TYPE_FIFO = 1
+CACHING_TYPE_LRU = 2
+CACHING_TYPE_LFU = 3
+CACHING_TYPE_ARC = 4
+
+CACHING_TYPES_STRINGS = {
+    1 : "fifo",
+    2 : "lru",
+    3 : "lfu",
+    4 : "arc",
 }
 
-KEY_DISTRIBUTION_TYPES = [
-                  KEY_DISTRIBUTION_TYPE_UNIFORM,
-                  KEY_DISTRIBUTION_TYPE_ZIPF,
-                  KEY_DISTRIBUTION_TYPE_MONOTONIC
+CACHING_TYPES = [
+    CACHING_TYPE_FIFO,
+    CACHING_TYPE_LRU,
+    CACHING_TYPE_LFU,
+    CACHING_TYPE_ARC
 ]
 
-## THREAD COUNTS
-THREAD_COUNTS = [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8
-]
+## TRACE TYPES
+TRACE_TYPE_TPCC = 1
 
-## CONTAINER TYPES
-CONTAINER_TYPE_BZTREE = "bztree"
-CONTAINER_TYPE_BWTREE = "bwtree"
+TRACE_TYPES_STRINGS = {
+    1 : "tpcc"
+}
 
-CONTAINER_TYPES = [
-    CONTAINER_TYPE_BZTREE,
-    CONTAINER_TYPE_BWTREE
+TRACE_TYPES = [
+    TRACE_TYPE_TPCC,
 ]
 
 ## OUTPUT
 
 THROUGHPUT_OFFSET = 0
 
-REPEAT_COUNT = 1
-RETRY_COUNT = 30
-
 ## DEFAULTS
 
-SCALE_FACTOR = 1000
-
-DEFAULT_TEST_ID = 0
-DEFAULT_LOG_TO_STDERR = 0
-DEFAULT_DURATION = 30
-TIMEOUT_DURATION = DEFAULT_DURATION * 4
-DEFAULT_BENCHMARK_TYPE = BENCHMARK_TYPE_RANDOMREADRANDOMWRITE
-DEFAULT_WORKLOAD_TYPE = WORKLOAD_TYPE_READ_ONLY
-DEFAULT_KEY_DISTRIBUTION_TYPE = KEY_DISTRIBUTION_TYPE_UNIFORM
-DEFAULT_CONTAINER_TYPE = CONTAINER_TYPE_BZTREE
-DEFAULT_PAGE_SIZE = 2048
-
+TIMEOUT_DURATION = 10
+DEFAULT_HIERARCHY_TYPE = HIERARCHY_TYPE_NVM
+DEFAULT_SIZE_TYPE = SIZE_TYPE_1
+DEFAULT_CACHING_TYPE = CACHING_TYPE_FIFO
+DEFAULT_LATENCY_TYPE = LATENCY_TYPE_1
+DEFAULT_TRACE_TYPE = TRACE_TYPE_TPCC
+DEFAULT_MIGRATION_FREQUENCY = 3
 
 ## EXPERIMENTS
 BENCHMARK_EXPERIMENT = 1
@@ -231,10 +225,10 @@ BENCHMARK_PLOT_DIR = BASE_DIR + "/images/benchmark/"
 
 ## BENCHMARK EXPERIMENT
 
-BENCHMARK_EXP_KEY_DISTRIBUTION_TYPES = KEY_DISTRIBUTION_TYPES
-BENCHMARK_EXP_WORKLOAD_TYPES = WORKLOAD_TYPES
-BENCHMARK_EXP_CONTAINER_TYPES = CONTAINER_TYPES
-BENCHMARK_EXP_THREAD_COUNTS = THREAD_COUNTS
+BENCHMARK_EXP_HIERARCHY_TYPES = HIERARCHY_TYPES
+BENCHMARK_EXP_SIZE_TYPES = SIZE_TYPES
+BENCHMARK_EXP_LATENCY_TYPES = LATENCY_TYPES
+BENCHMARK_EXP_CACHING_TYPES = CACHING_TYPES
 
 ## CSV FILES
 
@@ -322,22 +316,22 @@ def get_result_file(base_result_dir, result_dir_list, result_file_name):
 # LEGEND
 ###################################################################################
 
-def create_legend_container_type():
+def create_legend_latency_type():
     fig = pylab.figure()
     ax1 = fig.add_subplot(111)
 
-    LOG.info("Creating legend container type");
+    LOG.info("Creating latency type");
 
-    LEGEND_VALUES = CONTAINER_TYPES
+    LEGEND_VALUES = LATENCY_TYPES
 
-    figlegend = pylab.figure(figsize=(7, 0.5))
+    figlegend = pylab.figure(figsize=(10, 0.5))
     idx = 0
     lines = [None] * (len(LEGEND_VALUES) + 1)
     data = [1]
     x_values = [1]
 
-    TITLE = "CONTAINER:"
-    LABELS = [TITLE, "BZTREE", "BWTREE"]
+    TITLE = "LATENCIES:"
+    LABELS = [TITLE, "4x-4x", "4x-10x", "10x-10x"]
 
     lines[idx], = ax1.plot(x_values, data, linewidth = 0)
     idx = 1
@@ -352,12 +346,12 @@ def create_legend_container_type():
 
     # LEGEND
     figlegend.legend(lines, LABELS, prop=LEGEND_FP,
-                     loc=1, ncol=3,
+                     loc=1, ncol=4,
                      mode="expand", shadow=OPT_LEGEND_SHADOW,
                      frameon=False, borderaxespad=0.0,
                      handleheight=1, handlelength=3)
 
-    figlegend.savefig(LEGEND_PLOT_DIR + 'legend_container_type.pdf')
+    figlegend.savefig(LEGEND_PLOT_DIR + 'legend_latency_type.pdf')
     
 ###################################################################################
 # PLOT
@@ -519,44 +513,44 @@ def benchmark_eval():
     LOG.info("BENCHMARK EVAL")
 
     # ETA
-    l1 = len(BENCHMARK_EXP_KEY_DISTRIBUTION_TYPES)
-    l2 = len(BENCHMARK_EXP_WORKLOAD_TYPES)
-    l3 = len(BENCHMARK_EXP_CONTAINER_TYPES)
-    l4 = len(BENCHMARK_EXP_THREAD_COUNTS)
+    l1 = len(BENCHMARK_EXP_HIERARCHY_TYPES )
+    l2 = len(BENCHMARK_EXP_LATENCY_TYPES)
+    l3 = len(BENCHMARK_EXP_SIZE_TYPES)
+    l4 = len(BENCHMARK_EXP_CACHING_TYPES)
     print_eta(l1, l2, l3, l4)
 
-    for key_distribution_type in BENCHMARK_EXP_KEY_DISTRIBUTION_TYPES:
+    for caching_type in BENCHMARK_EXP_CACHING_TYPES:
         LOG.info(MAJOR_STRING)
 
-        for workload_type in BENCHMARK_EXP_WORKLOAD_TYPES:
+        for size_type in BENCHMARK_EXP_SIZE_TYPES:
             LOG.info(MINOR_STRING)
 
-            for container_type in BENCHMARK_EXP_CONTAINER_TYPES:
+            for latency_type in BENCHMARK_EXP_LATENCY_TYPES:
                 LOG.info(SUB_MINOR_STRING)
 
-                for thread_count in BENCHMARK_EXP_THREAD_COUNTS:
-                    LOG.info(" > key_distribution_type: " + KEY_DISTRIBUTION_TYPES_STRINGS[key_distribution_type] +
-                          " workload_type: " + WORKLOAD_TYPES_STRINGS[workload_type] +
-                          " container_type: " + container_type +
-                          " thread_count: " + str(thread_count) +
+                for hierarchy_type in BENCHMARK_EXP_HIERARCHY_TYPES:
+                    LOG.info(" > hierarchy_type: " + HIERARCHY_TYPES_STRINGS[hierarchy_type] +
+                          " latency_type: " + str(latency_type) +
+                          " size_type: " + str(size_type) +
+                          " caching_type: " + CACHING_TYPES_STRINGS[caching_type] +
                           "\n"
                     )
 
                     # Get result file
-                    result_dir_list = [KEY_DISTRIBUTION_TYPES_STRINGS[key_distribution_type],
-                                       WORKLOAD_TYPES_STRINGS[workload_type],
-                                       container_type]
+                    result_dir_list = [CACHING_TYPES_STRINGS[caching_type],
+                                       str(size_type),
+                                       str(latency_type)]
                     result_file = get_result_file(BENCHMARK_DIR, result_dir_list, BENCHMARK_CSV)
 
                     # Run experiment
                     stat = run_experiment(stat_offset=THROUGHPUT_OFFSET,
-                                          key_distribution_type=key_distribution_type,
-                                          workload_type=workload_type,
-                                          container_type=container_type,
-                                          thread_count=thread_count)
+                                          hierarchy_type=hierarchy_type,
+                                          latency_type=latency_type,
+                                          size_type=size_type,
+                                          caching_type=caching_type)
 
                     # Write stat
-                    write_stat(result_file, thread_count, stat)
+                    write_stat(result_file, hierarchy_type, stat)
 
 ###################################################################################
 # TEST
@@ -596,51 +590,25 @@ def clean_up_dir(result_directory):
 
 # RUN EXPERIMENT
 def run_experiment(
-    program=RELEASE_PROGRAM,
-    log_to_stderr=DEFAULT_LOG_TO_STDERR,
-    array_size=DEFAULT_ARRAY_SIZE,
-    benchmark_type=DEFAULT_BENCHMARK_TYPE,
-    container_type=DEFAULT_CONTAINER_TYPE,
-    clflush_type=DEFAULT_CLFLUSH_TYPE,
-    database_size=DEFAULT_DATABASE_SIZE,
-    inner_node_fraction=DEFAULT_INNER_NODE_FRACTION,
-    key_size=DEFAULT_KEY_SIZE,
-    key_distribution_type=DEFAULT_KEY_DISTRIBUTION_TYPE,
-    prefill_size=DEFAULT_PREFILL_SIZE,
-    page_size=DEFAULT_PAGE_SIZE,
-    duration=DEFAULT_DURATION,
-    thread_count=DEFAULT_THREAD_COUNT,
-    unsorted_fraction=DEFAULT_UNSORTED_FRACTION,
-    workload_type=DEFAULT_WORKLOAD_TYPE,
-    write_delay=DEFAULT_WRITE_DELAY,
-    test_id=DEFAULT_TEST_ID,
-    verbosity=DEFAULT_VERBOSITY,
-    function_retry_count=1,
-    function_repeat_count=1,
+    program=PROGRAM_NAME,
     stat_offset=THROUGHPUT_OFFSET,
-    sum_stat=0):
+    hierarchy_type=DEFAULT_HIERARCHY_TYPE,
+    latency_type=DEFAULT_LATENCY_TYPE,
+    size_type=DEFAULT_SIZE_TYPE,
+    caching_type=DEFAULT_CACHING_TYPE,
+    trace_type=DEFAULT_TRACE_TYPE,
+    migration_frequency=DEFAULT_MIGRATION_FREQUENCY):
 
     # subprocess.call(["rm -f " + OUTPUT_FILE], shell=True)
-    PROGRAM_OUTPUT_FILE_NAME = "bztree.txt"
-    PROGRAM_OUTPUT_FILE = open(PROGRAM_OUTPUT_FILE_NAME, "w")
+    PROGRAM_OUTPUT_FILE_NAME = "machine.txt"
+    PROGRAM_OUTPUT_FILE = open(PROGRAM_OUTPUT_FILE_NAME, "w")    
     arg_list = [program,
-                    "--logtostderr=" + str(log_to_stderr), "",
-                    "-array_size", str(array_size),
-                    "-benchmarks", str(benchmark_type),
-                    "-container", container_type,
-                    "-database_size", str(database_size),
-                    "-inner_node_fraction", str(inner_node_fraction),
-                    "-key_size", str(key_size),
-                    "-prefill_size", str(prefill_size),
-                    "-page_size", str(page_size),
-                    "-seconds", str(duration),
-                    "-threads", str(thread_count),
-                    "-unsorted_fraction", str(unsorted_fraction),
-                    "-update_percent", str(workload_type),
-                    "-use_clflush", str(clflush_type),
-                    "-random_number_distribution", KEY_DISTRIBUTION_TYPES_STRINGS[key_distribution_type],
-                    "-test_id", str(test_id),
-                    "-write_delay_ns", str(write_delay),
+                    "-a", str(hierarchy_type),
+                    "-l", str(latency_type),
+                    "-s", str(size_type),
+                    "-c", str(caching_type),
+                    "-f", "segment.txt",
+                    "-m", str(migration_frequency),
                 ]
     arg_string = ' '.join(arg_list[0:])
 
@@ -652,7 +620,7 @@ def run_experiment(
     try:
         subprocess.check_call(arg_list,
                               stdout=PROGRAM_OUTPUT_FILE,
-                              timeout = TIMEOUT_DURATION)
+                              timeout=TIMEOUT_DURATION)
     except subprocess.TimeoutExpired as e:
         LOG.error("TIMED OUT: " + PROGRAM_NAME)
         run_status = False
@@ -671,59 +639,9 @@ def run_experiment(
               LOG.error("FAILED: " + PROGRAM_NAME + "\nERROR :: " + line)
               run_status = False
 
-    ## Clean up output file
-    PROGRAM_OUTPUT_FILE.close()
-    os.remove(PROGRAM_OUTPUT_FILE_NAME)
-
-    ## Retry if needed
-    if function_retry_count > RETRY_COUNT:
-        LOG.error("MAX RETRY COUNT EXCEEDED: " + arg_string)
-        exit(EXIT_FAILURE)
-    elif run_status == False:
-        function_retry_count = function_retry_count + 1
-        LOG.info("RETRY ATTEMPT: " + str(function_retry_count))
-    elif function_repeat_count < REPEAT_COUNT:
-        # Sum stat
-        stat = collect_stat(stat_offset)
-        sum_stat = sum_stat + stat
-        function_repeat_count = function_repeat_count + 1
-        LOG.info("REPEAT ATTEMPT: " + str(function_repeat_count))
-    elif function_repeat_count == REPEAT_COUNT:
-        # Sum stat
-        stat = collect_stat(stat_offset)
-        sum_stat = sum_stat + stat
-        average_stat = sum_stat/REPEAT_COUNT
-        LOG.info("Average stat: " + str(average_stat))
-        return average_stat
-
-    # Retry/Repeat if needed
-    average_stat = run_experiment(
-        program=program,
-        log_to_stderr=log_to_stderr,
-        array_size=array_size,
-        benchmark_type=benchmark_type,
-        container_type=container_type,
-        clflush_type=clflush_type,
-        database_size=database_size,
-        inner_node_fraction=inner_node_fraction,
-        key_size=key_size,
-        key_distribution_type=key_distribution_type,
-        prefill_size=prefill_size,
-        page_size=page_size,
-        duration=duration,
-        thread_count=thread_count,
-        unsorted_fraction=unsorted_fraction,
-        workload_type=workload_type,
-        write_delay=write_delay,
-        test_id=test_id,
-        verbosity=verbosity,
-        function_retry_count=function_retry_count,
-        function_repeat_count=function_repeat_count,
-        stat_offset=stat_offset,
-        sum_stat=sum_stat
-    )
-
-    return average_stat
+    # Collect stat
+    stat = collect_stat(stat_offset)
+    return stat
 
 
 ## ==============================================
