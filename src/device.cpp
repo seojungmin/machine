@@ -315,7 +315,6 @@ void MoveVictim(std::vector<Device>& devices,
 Device DeviceFactory::GetDevice(const DeviceType& device_type,
                                 const SizeType& size_type,
                                 const CachingType& caching_type,
-                                const size_t& machine_size,
                                 const DeviceType& last_device_type){
 
   // SIZES (4K blocks)
@@ -364,7 +363,7 @@ Device DeviceFactory::GetDevice(const DeviceType& device_type,
       // Check for last device
       auto size = device_size[device_type];
       if(last_device_type == device_type){
-        size = machine_size * 1024;
+        size = 1024 * 1024;
       }
       return Device(device_type,
                     caching_type,

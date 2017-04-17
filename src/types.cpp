@@ -70,14 +70,16 @@ std::string SizeTypeToString(const SizeType& size_type){
 
 }
 
-std::string LoggingTypeToString(const LoggingType& logging_type){
+std::string LatencyTypeToString(const LatencyType& latency_type){
 
-  switch (logging_type) {
-    case LOGGING_TYPE_WAL:
-      return "WAL";
-    case LOGGING_TYPE_WBL:
-      return "WBL";
-    default:
+  switch (latency_type) {
+    case LATENCY_TYPE_1:
+      return "1";
+    case LATENCY_TYPE_2:
+      return "2";
+    case LATENCY_TYPE_3:
+      return "3";
+      default:
       return "INVALID";
   }
 

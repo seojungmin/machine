@@ -26,6 +26,15 @@ enum SizeType {
 
 };
 
+enum LatencyType {
+  LATENCY_TYPE_INVALID = 0,
+
+  LATENCY_TYPE_1 = 1,
+  LATENCY_TYPE_2 = 2,
+  LATENCY_TYPE_3 = 3
+
+};
+
 enum CachingType {
   CACHING_TYPE_INVALID = 0,
 
@@ -45,25 +54,17 @@ enum DeviceType {
 
 };
 
-enum LoggingType {
-  LOGGING_TYPE_INVALID = 0,
-
-  LOGGING_TYPE_WAL = 1,
-  LOGGING_TYPE_WBL = 2
-
-};
-
 DeviceType GetLastDevice(const HierarchyType& hierarchy_type);
 
 std::string HierarchyTypeToString(const HierarchyType& hierarchy_type);
 
 std::string SizeTypeToString(const SizeType& size_type);
 
+std::string LatencyTypeToString(const LatencyType& latency_type);
+
 std::string CachingTypeToString(const CachingType& caching_type);
 
 std::string DeviceTypeToString(const DeviceType& device_type);
-
-std::string LoggingTypeToString(const LoggingType& logging_type);
 
 
 }  // End machine namespace

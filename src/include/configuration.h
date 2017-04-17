@@ -24,6 +24,23 @@ class configuration {
   // size type
   SizeType size_type;
 
+  // latency type
+  LatencyType latency_type;
+
+  // caching type
+  CachingType caching_type;
+
+  // file name
+  std::string file_name;
+
+  // migration frequency
+  size_t migration_frequency;
+
+  // Verbose output
+  bool verbose;
+
+  // DERIVED BASED ON HIERARCHY TYPE
+
   // list of devices in hierarchy
   std::vector<Device> devices;
 
@@ -33,32 +50,13 @@ class configuration {
   // list of storage devices in hierarchy
   std::vector<Device> storage_devices;
 
-  // logging type
-  LoggingType logging_type;
-
-  // caching type
-  CachingType caching_type;
-
-  // file name
-  std::string file_name;
-
-  // upwards migration frequency
-  size_t migration_frequency;
-
-  // machine size
-  size_t machine_size;
-
-  // operation count
-  size_t operation_count;
+  // DERIVED BASED ON LATENCY TYPE
 
   // nvm read latency
   size_t nvm_read_latency;
 
   // nvm write latency
   size_t nvm_write_latency;
-
-  // Verbose output
-  bool verbose;
 
 };
 

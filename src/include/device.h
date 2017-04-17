@@ -67,7 +67,6 @@ class DeviceFactory {
   static Device GetDevice(const DeviceType& device_type,
                           const SizeType& size_type,
                           const CachingType& caching_type,
-                          const size_t& machine_size,
                           const DeviceType& last_device_type);
 
 };
