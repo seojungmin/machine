@@ -15,12 +15,6 @@ std::map<DeviceType, size_t> rnd_write_latency;
 
 void BootstrapDeviceMetrics(const configuration &state){
 
-  // SIZES (4K blocks)
-
-  device_size[DEVICE_TYPE_DRAM] = (128 * 1000)/4;
-  device_size[DEVICE_TYPE_NVM] = (1024 * 1000)/4;
-  device_size[DEVICE_TYPE_SSD] = (32 * 1024 * 1000)/4;
-
   // LATENCIES (us)
 
   seq_read_latency[DEVICE_TYPE_DRAM] = 0.4;
@@ -324,12 +318,41 @@ Device DeviceFactory::GetDevice(const DeviceType& device_type,
                                 const size_t& machine_size,
                                 const DeviceType& last_device_type){
 
+  // SIZES (4K blocks)
+
+  size_t scale_factor = 1000/4;
+
   switch(size_type){
-    case SIZE_TYPE_1:
+    case SIZE_TYPE_1: {
+      device_size[DEVICE_TYPE_DRAM] = 16;
+      device_size[DEVICE_TYPE_NVM] = 16;
+      device_size[DEVICE_TYPE_SSD] = 32 * 1024;
       break;
+    }
+
+    case SIZE_TYPE_2: {
+      device_size[DEVICE_TYPE_DRAM] = 16;
+      device_size[DEVICE_TYPE_NVM] = 128;
+      device_size[DEVICE_TYPE_SSD] = 32 * 1024;
+      break;
+    }
+
+    case SIZE_TYPE_3: {
+      device_size[DEVICE_TYPE_DRAM] = 128;
+      device_size[DEVICE_TYPE_NVM] = 16;
+      device_size[DEVICE_TYPE_SSD] = 32 * 1024;
+      break;
+    }
+
+    case SIZE_TYPE_4: {
+      device_size[DEVICE_TYPE_DRAM] = 128;
+      device_size[DEVICE_TYPE_NVM] = 128;
+      device_size[DEVICE_TYPE_SSD] = 32 * 1024;
+      break;
+    }
 
     default:{
-      std::cout << "Invalid size";
+      std::cout << "Invalid size type: " << size_type << "\n";
       exit(EXIT_FAILURE);
     }
   }
@@ -345,7 +368,7 @@ Device DeviceFactory::GetDevice(const DeviceType& device_type,
       }
       return Device(device_type,
                     caching_type,
-                    size
+                    size * scale_factor
       );
     }
 

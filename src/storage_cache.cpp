@@ -8,7 +8,8 @@ StorageCache::StorageCache(DeviceType device_type,
                            CachingType caching_type,
                            size_t capacity) :
                                    device_type_(device_type),
-                                   caching_type_(caching_type){
+                                   caching_type_(caching_type),
+                                   capacity_(capacity){
 
   switch(caching_type_){
 
@@ -155,6 +156,14 @@ std::ostream& operator<< (std::ostream& stream,
   std::cout << "-------------------------------\n";
   std::cout << "[" << DeviceTypeToString(cache.device_type_) << "] ";
   std::cout << "[" << CachingTypeToString(cache.caching_type_) <<"] ";
+
+  auto capacity = (cache.capacity_ * 4);
+  if(capacity < 1000 * 1000){
+    std::cout << "[" << capacity/1000 <<" MB] ";
+  }
+  else {
+    std::cout << "[" << capacity/(1000 * 1000) <<" GB] ";
+  }
 
   switch(cache.caching_type_){
 

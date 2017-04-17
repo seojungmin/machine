@@ -95,7 +95,6 @@ size_t CACHE_TEMPLATE_TYPE::CurrentCapacity() const {
   return cache_items_map.size();
 }
 
-
 CACHE_TEMPLATE_ARGUMENT
 void CACHE_TEMPLATE_TYPE::Insert(const Key& key,
                                  const Value& value) {
@@ -133,7 +132,8 @@ CACHE_TEMPLATE_TYPE::LocateEntry(const Key& key) const {
 CACHE_TEMPLATE_ARGUMENT
 void CACHE_TEMPLATE_TYPE::Print() const {
 
-  std::cout << "SIZE: " << cache_items_map.size() << "\n";
+  auto current_size = cache_items_map.size();
+  std::cout << "OCCUPIED: " << (current_size * 100)/capacity_ << " %\n";
 
   size_t block_itr = 0;
   for(auto& cache_item : cache_items_map){

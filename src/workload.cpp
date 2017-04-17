@@ -267,10 +267,6 @@ void MachineHelper() {
 
   // Run workload
 
-  // Determine size of last device
-  size_t total_slots = state.machine_size;
-  std::cout << "Total slots : " << total_slots << "\n";
-
   // Go through trace file
   std::unique_ptr<std::istream> input;
   char operation_type;
