@@ -20,6 +20,8 @@ void Usage() {
       "   -m --migration_frequency            :  migration frequency\n"
       "   -l --logging_type                   :  logging type\n"
       "   -o --operation_count                :  operation count\n"
+      "   -r --nvm_read_latency               :  nvm read latency\n"
+      "   -w --nvm_write_latency              :  nvm write latency\n"
       "   -v --verbose                        :  verbose\n";
   exit(EXIT_FAILURE);
 }
@@ -31,6 +33,8 @@ static struct option opts[] = {
     {"migration_frequency", optional_argument, NULL, 'm'},
     {"logging_type", optional_argument, NULL, 'l'},
     {"operation_count", optional_argument, NULL, 'o'},
+    {"nvm_read_latency", optional_argument, NULL, 'r'},
+    {"nvm_write_latency", optional_argument, NULL, 'w'},
     {"verbose", optional_argument, NULL, 'v'},
     {NULL, 0, NULL, 0}
 };
@@ -80,7 +84,15 @@ static void ValidateOperationCount(const configuration &state) {
   printf("%30s : %lu\n", "operation_count", state.operation_count);
 }
 
-static void ConstructDeviceList(configuration &state){
+static void ValidateReadLatency(const configuration &state) {
+  printf("%30s : %lu\n", "nvm_read_latency", state.nvm_read_latency);
+}
+
+static void ValidateWriteLatency(const configuration &state) {
+  printf("%30s : %lu\n", "nvm_write_latency", state.nvm_write_latency);
+}
+
+void ConstructDeviceList(configuration &state){
 
   auto last_device_type = GetLastDevice(state.hierarchy_type);
   Device dram_device = DeviceFactory::GetDevice(DEVICE_TYPE_DRAM,
@@ -140,12 +152,14 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
   state.migration_frequency = 3;
   state.operation_count = 1000;
   state.file_name = "";
+  state.nvm_read_latency = 4;
+  state.nvm_write_latency = 4;
 
   // Parse args
   while (1) {
     int idx = 0;
     int c = getopt_long(argc, argv,
-                        "a:c:f:m:l:o:vh",
+                        "a:c:f:m:l:o:r:w:vh",
                         opts, &idx);
 
     if (c == -1) break;
@@ -168,6 +182,12 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
         break;
       case 'o':
         state.operation_count = atoi(optarg);
+        break;
+      case 'r':
+        state.nvm_read_latency = atoi(optarg);
+        break;
+      case 'w':
+        state.nvm_write_latency = atoi(optarg);
         break;
       case 'v':
         state.verbose = atoi(optarg);
@@ -193,11 +213,10 @@ void ParseArguments(int argc, char *argv[], configuration &state) {
   ValidateFileName(state);
   ValidateMigrationFrequency(state);
   ValidateOperationCount(state);
+  ValidateReadLatency(state);
+  ValidateWriteLatency(state);
 
   printf("//===----------------------------------------------------------------------===//\n");
-
-  // Construct device list
-  ConstructDeviceList(state);
 
 }
 

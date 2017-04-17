@@ -2,6 +2,7 @@
 
 #include "macros.h"
 #include "device.h"
+#include "configuration.h"
 
 namespace machine {
 
@@ -11,10 +12,8 @@ std::map<DeviceType, size_t> seq_write_latency;
 std::map<DeviceType, size_t> rnd_read_latency;
 std::map<DeviceType, size_t> rnd_write_latency;
 
-size_t nvm_read_scale_factor = 10;
-size_t nvm_write_scale_factor = 10;
 
-void BootstrapDeviceMetrics(){
+void BootstrapDeviceMetrics(const configuration &state){
 
   // SIZES (4K blocks)
 
@@ -25,19 +24,23 @@ void BootstrapDeviceMetrics(){
   // LATENCIES (us)
 
   seq_read_latency[DEVICE_TYPE_DRAM] = 0.4;
-  seq_read_latency[DEVICE_TYPE_NVM] = seq_read_latency[DEVICE_TYPE_DRAM] * nvm_read_scale_factor;
+  seq_read_latency[DEVICE_TYPE_NVM] = seq_read_latency[DEVICE_TYPE_DRAM]
+                                                       * state.nvm_read_latency;
   seq_read_latency[DEVICE_TYPE_SSD] = 100;
 
   seq_write_latency[DEVICE_TYPE_DRAM] = 0.6;
-  seq_write_latency[DEVICE_TYPE_NVM] = seq_write_latency[DEVICE_TYPE_DRAM] * nvm_write_scale_factor;
+  seq_write_latency[DEVICE_TYPE_NVM] = seq_write_latency[DEVICE_TYPE_DRAM]
+                                                         * state.nvm_write_latency;
   seq_write_latency[DEVICE_TYPE_SSD] = 250;
 
   rnd_read_latency[DEVICE_TYPE_DRAM] = 0.5;
-  rnd_read_latency[DEVICE_TYPE_NVM] = rnd_read_latency[DEVICE_TYPE_DRAM] * nvm_read_scale_factor;
+  rnd_read_latency[DEVICE_TYPE_NVM] = rnd_read_latency[DEVICE_TYPE_DRAM]
+                                                       * state.nvm_read_latency;
   rnd_read_latency[DEVICE_TYPE_SSD] = 100;
 
   rnd_write_latency[DEVICE_TYPE_DRAM] = 0.7;
-  rnd_write_latency[DEVICE_TYPE_NVM] = rnd_write_latency[DEVICE_TYPE_DRAM] * nvm_write_scale_factor;
+  rnd_write_latency[DEVICE_TYPE_NVM] = rnd_write_latency[DEVICE_TYPE_DRAM]
+                                                         * state.nvm_write_latency;
   rnd_write_latency[DEVICE_TYPE_SSD] = 400;
 
 }

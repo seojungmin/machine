@@ -8,6 +8,8 @@ namespace machine {
 
 extern size_t scale_factor;
 
+class configuration;
+
 struct Device {
 
 
@@ -39,7 +41,7 @@ size_t GetReadLatency(std::vector<Device>& devices,
                       DeviceType device_type,
                       const size_t& block_id);
 
-void BootstrapDeviceMetrics();
+void BootstrapDeviceMetrics(const configuration &state);
 
 void Copy(std::vector<Device>& devices,
           DeviceType destination,

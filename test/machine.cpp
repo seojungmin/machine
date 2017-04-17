@@ -26,10 +26,13 @@ int main(int argc, char **argv) {
   // Initialize Google's logging library.
   google::InitGoogleLogging(argv[0]);
 
-  machine::BootstrapDeviceMetrics();
-
   machine::ParseArguments(
       argc, argv, machine::state);
+
+  machine::BootstrapDeviceMetrics(machine::state);
+
+  // Construct device list
+  machine::ConstructDeviceList(machine::state);
 
   machine::RunBenchmark();
 

@@ -48,6 +48,12 @@ class configuration {
   // operation count
   size_t operation_count;
 
+  // nvm read latency
+  size_t nvm_read_latency;
+
+  // nvm write latency
+  size_t nvm_write_latency;
+
   // Verbose output
   bool verbose;
 
@@ -56,5 +62,7 @@ class configuration {
 void Usage(FILE *out);
 
 void ParseArguments(int argc, char *argv[], configuration &state);
+
+void ConstructDeviceList(configuration &state);
 
 }  // namespace machine
