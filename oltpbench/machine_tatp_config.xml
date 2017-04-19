@@ -2,12 +2,12 @@
 <parameters>
 
     <!-- Connection details -->
-    <dbtype>mysql</dbtype>
-    <driver>com.mysql.jdbc.Driver</driver>
-    <DBUrl>jdbc:mysql://server:3306/tatp</DBUrl>
-    <username>user</username>
-    <password>password</password>
-    <isolation>TRANSACTION_SERIALIZABLE</isolation>
+    <dbtype>postgres</dbtype>
+    <driver>org.postgresql.Driver</driver>
+    <DBUrl>jdbc:postgresql://localhost:5432/tpcc</DBUrl>
+    <username>tpcc</username>
+    <password>tpcc</password>
+    <isolation>TRANSACTION_READ_COMMITTED</isolation>
         
     <!-- Scalefactor increases the number of subscribers -->
     <scalefactor>100</scalefactor>
@@ -16,7 +16,7 @@
     <terminals>10</terminals>
     <works>
         <work>
-            <time>300</time>
+            <time>60</time>
             <rate>10000</rate>
             <weights>2, 35, 10, 35, 2, 14, 2</weights>
         </work>

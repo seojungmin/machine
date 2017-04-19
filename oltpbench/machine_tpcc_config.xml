@@ -10,10 +10,10 @@
     <isolation>TRANSACTION_READ_COMMITTED</isolation>
     
     <!-- Scale factor is the number of warehouses in TPCC -->
-    <scalefactor>2</scalefactor>
+    <scalefactor>8</scalefactor>
     
     <!-- The workload -->
-    <terminals>4</terminals>
+    <terminals>32</terminals>
     <works>
         <work>
           <time>60</time>
