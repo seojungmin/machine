@@ -187,10 +187,10 @@ CACHING_TYPES_STRINGS = {
 }
 
 CACHING_TYPES = [
-#    CACHING_TYPE_FIFO,
-#    CACHING_TYPE_LRU,
+    CACHING_TYPE_FIFO,
+    CACHING_TYPE_LRU,
     CACHING_TYPE_LFU,
-    CACHING_TYPE_ARC
+#    CACHING_TYPE_ARC
 ]
 
 ## TRACE TYPES
@@ -357,7 +357,7 @@ def create_legend_latency_type():
                      handleheight=1, handlelength=3)
 
     figlegend.savefig(LEGEND_PLOT_DIR + 'legend_latency_type.pdf')
-    
+
 ###################################################################################
 # PLOT
 ###################################################################################
@@ -428,7 +428,7 @@ def benchmark_plot():
 
     for caching_type in BENCHMARK_EXP_CACHING_TYPES:
         print(MAJOR_STRING)
-        
+
         for size_type in BENCHMARK_EXP_SIZE_TYPES:
 
             datasets = []
@@ -595,7 +595,7 @@ def run_experiment(
 
     # subprocess.call(["rm -f " + OUTPUT_FILE], shell=True)
     PROGRAM_OUTPUT_FILE_NAME = "machine.txt"
-    PROGRAM_OUTPUT_FILE = open(PROGRAM_OUTPUT_FILE_NAME, "w")    
+    PROGRAM_OUTPUT_FILE = open(PROGRAM_OUTPUT_FILE_NAME, "w")
     arg_list = [program,
                     "-a", str(hierarchy_type),
                     "-l", str(latency_type),
