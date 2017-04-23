@@ -4,7 +4,7 @@ Multi-tier storage hierarchy simulator.
 
 ## Dependencies
 
-- **g++ 4.7+** 
+- **g++ 4.9+**
 - **cmake** (`apt-get install autoconf cmake`) 
 
 ## Setup
